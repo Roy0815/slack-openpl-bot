@@ -2,20 +2,18 @@
 // Test
 
 const fs = require('fs'); 
-const csv = require('csv-parser');
+const etl = require("etl");
+const unzip = require("unzip-stream");
 
-fs.createReadStream('openipf-2021.csv')
-.pipe(csv())
-.on('data', function(data){
-    try {
-        console.log(data)
-        console.log("Name is: "+ data.Name);
-        console.log("Sex is: "+ data.Sex);
-    }
-    catch(err) {
-        //error handler
-    }
-})
-.on('end',function(){
-    //some final operation
-});
+function readCSV(entry) {
+    let recordCount = 0;
+    let etlcsv = entry.pipe(etl.csv())
+    etlcsv.pipe(etl.map(d => {
+        console.log(d);
+        recordCount++;
+        if (recordCount > 5) {
+            etlcsv.destroy();
+            entry.autodrain();
+        }
+    }))
+}
