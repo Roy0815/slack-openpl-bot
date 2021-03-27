@@ -17,3 +17,14 @@ function readCSV(entry) {
         }
     }))
 }
+
+function unzipFolder() {
+    let test = fs.createReadStream('openipf-latest.zip').pipe(unzip.Parse())
+    test.on('entry', function(entry) {
+        if (entry.type == 'File' && entry.path.endsWith('.csv')) { //exclude Folders and the .txt Files
+            readCSV(entry)
+        }
+    })
+}
+
+unzipFolder()
