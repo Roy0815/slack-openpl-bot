@@ -4,6 +4,7 @@
 const fs = require('fs'); 
 const etl = require("etl");
 const unzip = require("unzip-stream");
+const https = require('https');
 
 function readCSV(entry) {
     let recordCount = 0;
@@ -18,8 +19,8 @@ function readCSV(entry) {
     }))
 }
 
-function unzipFolder() {
-    let test = fs.createReadStream('openipf-latest.zip').pipe(unzip.Parse())
+function unzipFolder(path) {
+    let test = fs.createReadStream(path).pipe(unzip.Parse())
     test.on('entry', function(entry) {
         if (entry.type == 'File' && entry.path.endsWith('.csv')) { //exclude Folders and the .txt Files
             readCSV(entry)
@@ -27,4 +28,22 @@ function unzipFolder() {
     })
 }
 
-unzipFolder()
+function downloadZip(url, path) {
+    https.get(url, function(response) {
+        switch(response.statusCode) {
+            case 200:
+                var file = fs.createWriteStream(path); //save file
+                response.on('data', function(chunk){
+                    file.write(chunk);
+                }).on('end', function(){
+                    file.end();
+                    unzipFolder(path) //downloading done -> extract data
+                });
+                break;
+            default:
+                console.log('An Error occured while downloading')
+        }
+    })
+}
+
+downloadZip('https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip', 'openpowerlifting-latest.zip')
