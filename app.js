@@ -5,6 +5,7 @@ const fs = require('fs');
 const etl = require("etl");
 const unzip = require("unzip-stream");
 const https = require('https');
+const mysql = require('mysql');
 
 function readCSV(entry) {
     let recordCount = 0;
@@ -12,7 +13,7 @@ function readCSV(entry) {
     etlcsv.pipe(etl.map(d => {
         console.log(d);
         recordCount++;
-        if (recordCount > 5) {
+        if (recordCount > 5) { //Process only 5 records for now
             etlcsv.destroy();
             entry.autodrain();
         }
@@ -46,4 +47,16 @@ function downloadZip(url, path) {
     })
 }
 
-downloadZip('https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip', 'openpowerlifting-latest.zip')
+//downloadZip('https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip', 'openpowerlifting-latest.zip')
+
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "2duM2vrZh.",
+  database: "openpl"
+});
+
+con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+});
