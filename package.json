@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
-    "etl": "^0.6.12",
+    "fast-csv": "^4.3.6",
     "https": "^1.0.0",
     "unzip-stream": "^0.3.1"
   },
