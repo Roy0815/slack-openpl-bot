@@ -76,14 +76,12 @@ function updateDatabase() {
                 if (err) {
                     console.log('Error in Database query');
                     console.log(err.stack);
-                    fs.unlink(csvPath, (err) => { if (err) { console.log(err) } }); // delete CSV
-                    done();
                 } else {
                     console.log('Database updated!')
                     console.log(res)
-                    fs.unlink(csvPath, (err) => { if (err) { console.log(err) } }); // delete CSV
-                    done();
                 }
+                fs.unlink(csvPath, (err) => { if (err) { console.log(err) } }); // delete CSV
+                done();
             })
         } finally {
             //done();
