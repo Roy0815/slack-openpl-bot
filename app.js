@@ -1,103 +1,99 @@
 //This will be an App that allows Slack users to get Data from openpowerlifting.org directly into the workspace
-// Test
 
 const fs = require('fs');
-const fastcsv = require("fast-csv");
-const unzip = require("unzip-stream");
+const unzip = require('unzip-stream');
 const https = require('https');
 const { Pool } = require('pg');
+require('dotenv').config();
 
-function readCSV(entry) {
-    //let recordCount = 0;
-    let csvData = [];
+const csvPath = '../testdata/openpowerlifting-latest.csv';
+const zipPath = '../testdata/openpowerlifting-latest.zip';
+const openPLurl = 'https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip';
+const fullCsvPath = '/home/slack-openpl-bot/testdata/openpowerlifting-latest.csv'
 
-    let csvStream = fastcsv
-        .parse()
-        .on("data", function(data) {
-            //recordCount++;
-            csvData.push(data);
-            //console.log(recordCount + ': ' + data)
-        })
-        .on("end", function() {
-            // remove the first line: header
-            csvData.shift();
-
-            // save csvData
-            updateDatabase(csvData);
-        });
-
-    entry.pipe(csvStream);
-}
-
-function unzipFolder(path) {
-    let test = fs.createReadStream(path).pipe(unzip.Parse())
-    test.on('entry', function(entry) {
+function unzipFolder() {
+    fs.createReadStream(zipPath).pipe(unzip.Parse())
+    .on('entry', (entry) => {
         if (entry.type == 'File' && entry.path.endsWith('.csv')) { //exclude Folders and the .txt Files
-            readCSV(entry) //CSV found --> process CSV
+            entry.pipe(fs.createWriteStream(csvPath)); //CSV found --> save to system
+        } else {
+            entry.autodrain(); //leave the ones we don't need
         }
     })
+    .on('finish', () => {
+        fs.unlink(zipPath, (err) => { if (err) { console.log(err) } }); // delete ZIP
+        updateDatabase();
+    }); 
 }
 
-function downloadZip(url, path) {
-    https.get(url, function(response) {
+function downloadZip() {
+    https.get(openPLurl, function(response) {
         switch(response.statusCode) {
             case 200:
-                var file = fs.createWriteStream(path); //save file
+                let file = fs.createWriteStream(zipPath); //save file
                 response.on('data', function(chunk){
                     file.write(chunk);
                 }).on('end', function(){
                     file.end();
-                    unzipFolder(path) //downloading done -> extract data
+                    unzipFolder(zipPath) //downloading done -> extract data
                 });
                 break;
             default:
                 console.log('An Error occured while downloading')
         }
+    }).on("error", (err) => {
+        console.log('An Error occured while downloading')
     })
 }
 
-function updateDatabase(csvData) {
+function updateDatabase() {
     let pool = new Pool({
-        user: 'roylotzwik',
-        host: 'localhost',
+        user: process.env.POSTGRES_USER,
+        host: process.env.POSTGRES_HOST,
         database: 'openpl',
-        password: '2duM2vrZh.',
-        port: 9000,
+        password: process.env.POSTGRES_PASSWORD,
+        port: process.env.POSTGRES_PORT,
     });
 
-    let insertQuery = 'INSERT INTO lifterdata_csv_char' + //'(name, totalkg, place, date)'//
-                "(name, sex, event, equipment, age, ageclass, birthyearclass, division, bodyweightkg, weightclasskg, squat1kg, squat2kg, squat3kg, squat4kg, best3squatkg, bench1kg, bench2kg, bench3kg, bench4kg, best3benchkg, deadlift1kg, deadlift2kg, deadlift3kg, deadlift4kg, best3deadliftkg, totalkg, place, dots, wilks, glossbrenner, goodlift, tested, country, state, federation, parentfederation, date, meetcountry, meetstate, meettown, meetname) " +
-                'VALUES' + //(Test Roy, 700, 1, 2020-12-12';
-                "($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41)";
-    
-    let clearQuery = 'TRUNCATE lifterdata_csv_char';
+    let query = 'CREATE TEMP TABLE lifterdata_csv_char_temp ON COMMIT DROP ' +
+                'AS SELECT * FROM public.lifterdata_csv_char WITH NO DATA;' +
+
+                'COPY lifterdata_csv_char_temp (name, sex, event, equipment, age, ageclass, birthyearclass, division, bodyweightkg, weightclasskg, squat1kg, squat2kg, squat3kg, squat4kg, best3squatkg, bench1kg, bench2kg, bench3kg, bench4kg, best3benchkg, deadlift1kg, deadlift2kg, deadlift3kg, deadlift4kg, best3deadliftkg, totalkg, place, dots, wilks, glossbrenner, goodlift, tested, country, state, federation, parentfederation, date, meetcountry, meetstate, meettown, meetname) ' +
+                'FROM \'' + fullCsvPath + '\'' + 'DELIMITER \',\' CSV HEADER QUOTE \'"\' ' +
+                'ESCAPE \'\'\'\' FORCE NOT NULL bodyweightkg, totalkg, division;' +
+                
+                'TRUNCATE public.lifterdata_csv_char;' +
+
+                'INSERT INTO public.lifterdata_csv_char ' +
+                'SELECT * FROM lifterdata_csv_char_temp ON CONFLICT DO NOTHING;';
+
+    //query = 'SELECT * FROM public.lifterdata_csv_char LIMIT 10;'
 
     pool.connect((err, client, done) => {
         if (err) throw err;
-    
         try {
-            client.query(clearQuery, (err, res) => { //Clear table, if success -> write
+            client.query(query, (err, res) => {
                 if (err) {
+                    console.log('Error in Database query');
                     console.log(err.stack);
+                    fs.unlink(csvPath, (err) => { if (err) { console.log(err) } }); // delete CSV
+                    done();
                 } else {
-                    let rowCount = 0;
-                    csvData.forEach(row => {
-                        client.query(insertQuery, row, (err, res) => {
-                            if (err) {
-                                console.log(err.stack);
-                            } else {
-                                rowCount++;
-                                console.log("inserted: " + rowCount);
-                            }
-                        });
-                    });
+                    console.log('Database updated!')
+                    console.log(res)
+                    fs.unlink(csvPath, (err) => { if (err) { console.log(err) } }); // delete CSV
+                    done();
                 }
             })
         } finally {
-            done();
+            //done();
         }
         });
 }
 
-//downloadZip('https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip', '../testdata/openpowerlifting-latest.zip')
-unzipFolder('../testdata/openpowerlifting-latest.zip')
+function startUpdateDatabase () {
+    downloadZip();
+}
+
+//updateDatabase();
+startUpdateDatabase();
