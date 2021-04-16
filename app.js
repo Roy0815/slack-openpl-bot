@@ -4,12 +4,15 @@ const fs = require('fs');
 const unzip = require('unzip-stream');
 const https = require('https');
 const { Pool } = require('pg');
+const express = require('express');
 require('dotenv').config();
 
 const csvPath = '../testdata/openpowerlifting-latest.csv';
 const zipPath = '../testdata/openpowerlifting-latest.zip';
 const openPLurl = 'https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip';
 const fullCsvPath = '/home/slack-openpl-bot/testdata/openpowerlifting-latest.csv'
+
+const app = express();
 
 function unzipFolder() {
     fs.createReadStream(zipPath).pipe(unzip.Parse())
@@ -94,4 +97,11 @@ function startUpdateDatabase () {
 }
 
 //updateDatabase();
-startUpdateDatabase();
+//startUpdateDatabase();
+
+app.get('/', (req, res) => {
+    res.send('Hello World');
+})
+
+app.listen(8001,'0.0.0.0');
+console.log('Slack OpenPL App listening on: 0.0.0.0:8001');
