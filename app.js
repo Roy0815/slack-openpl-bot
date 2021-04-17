@@ -103,5 +103,5 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 })
 
-app.listen(8001,'0.0.0.0');
-console.log('Slack OpenPL App listening on: 0.0.0.0:8001');
+app.listen(8080,'0.0.0.0');
+console.log('Slack OpenPL App listening on: 0.0.0.0:8080');
