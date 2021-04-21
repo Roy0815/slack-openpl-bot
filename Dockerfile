@@ -1,10 +1,9 @@
-FROM node:latest as builder
+FROM node:15.14.0-alpine3.10
 
+WORKDIR /docker/slack-openpl-bot
 COPY package*.json ./
 
-RUN npm install --only=production && \
-    npm cache clean
-
+RUN npm install --production
 COPY . .
 
 EXPOSE 8080
