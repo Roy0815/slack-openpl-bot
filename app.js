@@ -5,6 +5,7 @@ const unzip = require('unzip-stream');
 const https = require('https');
 const { Pool } = require('pg');
 const express = require('express');
+const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const csvPath = '../testdata/openpowerlifting-latest.csv';
@@ -13,6 +14,8 @@ const openPLurl = 'https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlif
 const fullCsvPath = '/home/slack-openpl-bot/testdata/openpowerlifting-latest.csv'
 
 const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 function unzipFolder() {
     fs.createReadStream(zipPath).pipe(unzip.Parse())
@@ -96,11 +99,21 @@ function startUpdateDatabase () {
     downloadZip();
 }
 
-//updateDatabase();
-//startUpdateDatabase();
-
 app.get('/', (req, res) => {
-    res.send('Hello World');
+    console.log("Get /");
+    res.writeHead(301, {Location: 'https://roylotzwik.de/open-powerlifting-bot-slack/'});
+    res.end();
+})
+
+app.post('/', (req, res) => {
+    console.log("Post /");
+    if (req.body) console.log(req.body);
+
+    if (req.body && req.body.challenge && req.body.type == "url_verification") {
+        return res.send(req.body.challenge);
+    }
+
+    res.sendStatus(200);
 })
 
 app.listen(8080,'0.0.0.0');
