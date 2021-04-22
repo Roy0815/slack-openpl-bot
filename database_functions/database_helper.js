@@ -13,6 +13,7 @@ const fullCsvPath = '/home/slack-openpl-bot/testdata/openpowerlifting-latest.csv
 
 module.exports = {
     startUpdateDatabase : function () {
+        console.log('Database update started')
         downloadZip()
     }
 };
@@ -29,6 +30,7 @@ function unzipFolder() {
     .on('finish', () => {
         fs.unlink(zipPath, (err) => { if (err) { console.log(err) } }) // delete ZIP
         updateDatabase()
+        console.log('Unzip finished, Zip deleted')
     }); 
 }
 
@@ -42,6 +44,7 @@ function downloadZip() {
                 }).on('end', function(){
                     file.end()
                     unzipFolder(zipPath) //downloading done -> extract data
+                    console.log('Download of Zip finished')
                 });
                 break;
             default:
@@ -85,6 +88,7 @@ function updateDatabase() {
                     console.log(res)
                 }
                 fs.unlink(csvPath, (err) => { if (err) { console.log(err) } }) // delete CSV
+                console.log('CSV deleted')
                 done()
             })
         } finally {
