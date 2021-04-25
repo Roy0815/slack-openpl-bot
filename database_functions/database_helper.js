@@ -1,15 +1,13 @@
 // file with all functions for database read/ write actions
 
-const fs = require('fs');
-const unzip = require('unzip-stream');
-const https = require('https');
-const { Pool } = require('pg');
-require('dotenv').config();
+const fs = require('fs')
+const unzip = require('unzip-stream')
+const https = require('https')
+const { Pool } = require('pg')
 
-const csvPath = '../testdata/openpowerlifting-latest.csv';
-const zipPath = '../testdata/openpowerlifting-latest.zip';
-const openPLurl = 'https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip';
-const fullCsvPath = '/home/slack-openpl-bot/testdata/openpowerlifting-latest.csv'
+const csvPath = '/var/lib/files/openpowerlifting-latest.csv'
+const zipPath = '/var/lib/files/openpowerlifting-latest.zip'
+const openPLurl = 'https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip'
 
 module.exports = {
     startUpdateDatabase : function () {
@@ -56,25 +54,27 @@ function downloadZip() {
 }
 
 function updateDatabase() {
+    console.log("Database query started")
+
     let pool = new Pool({
-        user: process.env.POSTGRES_USER,
-        host: process.env.POSTGRES_HOST,
-        database: 'openpl',
-        password: process.env.POSTGRES_PASSWORD,
-        port: process.env.POSTGRES_PORT,
+        user: process.env.DB_POSTGRES_USER,
+        host: process.env.DB_POSTGRES_HOST,
+        database: process.env.DB_POSTGRES_DATABASE,
+        password: process.env.DB_POSTGRES_PASSWORD,
+        port: process.env.DB_POSTGRES_PORT,
     });
 
-    let query = 'CREATE TEMP TABLE lifterdata_csv_char_temp ON COMMIT DROP ' +
-                'AS SELECT * FROM public.lifterdata_csv_char WITH NO DATA;' +
+    let query = 'CREATE TEMP TABLE lifterdata_csv_temp ON COMMIT DROP ' +
+                'AS SELECT * FROM public.lifterdata_csv WITH NO DATA;' +
 
-                'COPY lifterdata_csv_char_temp (name, sex, event, equipment, age, ageclass, birthyearclass, division, bodyweightkg, weightclasskg, squat1kg, squat2kg, squat3kg, squat4kg, best3squatkg, bench1kg, bench2kg, bench3kg, bench4kg, best3benchkg, deadlift1kg, deadlift2kg, deadlift3kg, deadlift4kg, best3deadliftkg, totalkg, place, dots, wilks, glossbrenner, goodlift, tested, country, state, federation, parentfederation, date, meetcountry, meetstate, meettown, meetname) ' +
-                'FROM \'' + fullCsvPath + '\'' + 'DELIMITER \',\' CSV HEADER QUOTE \'"\' ' +
+                'COPY lifterdata_csv_temp (name, sex, event, equipment, age, ageclass, birthyearclass, division, bodyweightkg, weightclasskg, squat1kg, squat2kg, squat3kg, squat4kg, best3squatkg, bench1kg, bench2kg, bench3kg, bench4kg, best3benchkg, deadlift1kg, deadlift2kg, deadlift3kg, deadlift4kg, best3deadliftkg, totalkg, place, dots, wilks, glossbrenner, goodlift, tested, country, state, federation, parentfederation, date, meetcountry, meetstate, meettown, meetname) ' +
+                'FROM \'' + csvPath + '\'' + 'DELIMITER \',\' CSV HEADER QUOTE \'"\' ' +
                 'ESCAPE \'\'\'\' FORCE NOT NULL bodyweightkg, totalkg, division;' +
                 
-                'TRUNCATE public.lifterdata_csv_char;' +
+                'TRUNCATE public.lifterdata_csv;' +
 
-                'INSERT INTO public.lifterdata_csv_char ' +
-                'SELECT * FROM lifterdata_csv_char_temp ON CONFLICT DO NOTHING;';
+                'INSERT INTO public.lifterdata_csv ' +
+                'SELECT * FROM lifterdata_csv_temp ON CONFLICT DO NOTHING;';
 
     pool.connect((err, client, done) => {
         if (err) throw err;
@@ -85,7 +85,7 @@ function updateDatabase() {
                     console.log(err.stack)
                 } else {
                     console.log('Database updated!')
-                    console.log(res)
+                    console.log(res?.[4]) //only log the insert
                 }
                 fs.unlink(csvPath, (err) => { if (err) { console.log(err) } }) // delete CSV
                 console.log('CSV deleted')
