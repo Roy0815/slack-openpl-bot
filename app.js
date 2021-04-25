@@ -29,5 +29,6 @@ app.post('/', (req, res) => {
 app.listen(8080,'0.0.0.0')
 console.log('Slack OpenPL App listening on: 0.0.0.0:8080')
 
-const job = new CronJob('59 23 * * 0', db_helper.startUpdateDatabase())
+//const job = new CronJob('59 23 * * 0', db_helper.startUpdateDatabase())
+//job.start()
 console.log('Database update Job started for Sundays 11.59 p.m.')
