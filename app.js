@@ -1,34 +1,77 @@
 //This will be an App that allows Slack users to get Data from openpowerlifting.org directly into the workspace
 
-const express = require('express')
-const bodyParser = require('body-parser')
+const { App, ExpressReceiver, LogLevel } = require('@slack/bolt')
+//const bodyParser = require('body-parser')
 const { CronJob } = require('cron')
-const db_helper = require('./database_functions/database_helper.js')
+const db_helper = require('./database_functions/database_helper')
+const slack_helper = require('./slack_functions/slack_helper')
 
-const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Create receiver
+const receiver = new ExpressReceiver({ signingSecret: process.env.SLACK_SIGNING_SECRET });
 
-app.get('/', (req, res) => {
+// Create Bolt App
+const app = new App({
+    token: process.env.SLACK_BOT_TOKEN,
+    receiver,
+    logLevel: LogLevel.DEBUG
+});
+
+//get URL
+receiver.router.get('/', (req, res) => {
     console.log("Get /");
-    res.writeHead(301, {Location: 'https://roylotzwik.de/open-powerlifting-bot-slack/'});
-    res.end();
-})
+    res.send("test");
+});
 
-app.post('/', (req, res) => {
-    console.log("Post /");
-    if (req.body) console.log(req.body)
-
-    if (req.body?.challenge && req.body?.type == "url_verification") {
-        return res.send(req.body.challenge)
+// Commands
+app.command('/lastmeet', async ({ command, ack, client }) => {
+    console.log("/latestmeet started");
+    await ack();
+    try{
+        let view = slack_helper.entryView;
+        view.trigger_id = command.trigger_id;
+        let result = await client.views.open(view);
+        console.log(result);
+    } catch (error) {
+        console.log("Error in Command /latestmeet :");
+        console.log(error);
     }
+});
 
-    res.sendStatus(200);
-})
+//events
+app.event('app_mention', async ({ event , client  }) => {
+    console.log("event app_mention started");
+    try{
+        let entryMessageView = slack_helper.entryMessageView;
 
-app.listen(8080,'0.0.0.0')
-console.log('Slack OpenPL App listening on: 0.0.0.0:8080')
+        entryMessageView.channel = event.channel;
+        entryMessageView.user = event.user;
+        if (event.thread_ts) entryMessageView.thread_ts = event.thread_ts;
+
+        let result = await client.chat.postEphemeral(entryMessageView);
+        console.log(result);
+    } catch (error) {
+        console.log("Error in Event app_mention");
+        console.log(error);
+    }
+});
+
+//actions
+app.action('entrymessage_cancel', async ({ respond , ack }) => {
+    console.log("action entrymessage_cancel started");
+    await ack();
+    await respond({
+        text: "Action cancelled",
+        response_type: "ephemeral",
+        replace_original: true
+    });
+});
+
+(async () => {
+    // Start the app
+    await app.start(process.env.APP_PORT);
+    console.log('Slack OpenPL App listening on Port ' + process.env.APP_PORT)
+})();
 
 //const job = new CronJob('59 23 * * 0', db_helper.startUpdateDatabase())
 //job.start()
-console.log('Database update Job started for Sundays 11.59 p.m.')
+console.log('Database update Job started for Sundays 11.59 p.m.');
