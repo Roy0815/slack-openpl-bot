@@ -1,6 +1,58 @@
 // file with everything for slack interactions
 
 //views
+const entryMessageView = {
+    channel: "",
+    text: "You mentioned me in your message, do you want to start a lookup?",
+    user: "",
+    thread_ts: "",
+    blocks: [
+        {
+			type: "section",
+			text: {
+				type: "mrkdwn",
+				text: "You mentioned me in your message, do you want to start a lookup?"
+			}
+		},
+		{
+			type: "actions",
+			elements: [
+				{
+					type: "button",
+					text: {
+						type: "plain_text",
+						text: "Yes",
+						emoji: true
+					},
+                    action_id: "entrymessage_start",
+                    style: "primary",
+					value: "click_me_123"
+				},
+				{
+					type: "button",
+					text: {
+						type: "plain_text",
+						text: "Yes and delete my message",
+						emoji: true
+					},
+                    action_id: "entrymessage_start_delete_usermessage",
+					value: "click_me_123"
+				},
+				{
+					type: "button",
+					text: {
+						type: "plain_text",
+						text: "No",
+						emoji: true
+					},
+                    action_id: "entrymessage_cancel",
+					value: "click_me_123"
+				}
+			]
+		}
+    ]
+};
+
 const entryView = {
     trigger_id: '',
         view: {
@@ -72,5 +124,6 @@ module.exports = {
         console.log('Test')
     },
 
-    entryView
+    entryView,
+    entryMessageView
 };
