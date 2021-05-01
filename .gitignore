@@ -4,3 +4,4 @@ openpowerlifting-latest.zip
 testdata/
 node_modules/
 .env
+test.js
