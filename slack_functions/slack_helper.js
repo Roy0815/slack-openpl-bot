@@ -106,6 +106,24 @@ const entryDialogView = {
                         }
                     ]
                 }
+            },
+            {
+                type: "section",
+                block_id: "entrydialog_conversations_select",
+                text: {
+                    type: "mrkdwn",
+                    text: "And the conversation you want to post to"
+                },
+                accessory: {
+                    type: "conversations_select",
+                    placeholder: {
+                        type: "plain_text",
+                        text: "Select conversation",
+                        emoji: true
+                    },
+                    action_id: "entrydialog_conversations_select"//,
+                    //response_url_enabled: true
+                }
             }
         ]
     }
@@ -431,6 +449,190 @@ const top10SubView = [
     }
 ];
 
+const singlemeetResultMessageView = {
+    channel: '',
+    text: '',// Text in the notification, set in the method
+    emoji: true,
+    unfurl_links: false,
+    blocks: [
+        {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: ""
+            },
+            fields: [
+                {
+                    type: "mrkdwn",
+                    text: "*Meet:* BW Meisterschaften 2019"
+                },
+                {
+                    type: "mrkdwn",
+                    text: "*Date:* 22.09.2019"
+                }
+            ]
+        },
+        {
+            type: "section",
+            fields: [
+                {
+                    type: "mrkdwn",
+                    text: "*Categorie:* Juniors"
+                },
+                {
+                    type: "mrkdwn",
+                    text: "*Class:* 93 kg"
+                },
+                {
+                    type: "mrkdwn",
+                    text: "*Place:* 🥈"
+                },
+                {
+                    type: "mrkdwn",
+                    text: "*Dots:* 500"
+                }
+            ]
+        },
+        {
+            type: "section",
+            fields: [
+                {
+                    type: "mrkdwn",
+                    text: "*Squat:* 255 kg"
+                },
+                {
+                    type: "mrkdwn",
+                    text: "*Bench:* 157,5 kg"
+                },
+                {
+                    type: "mrkdwn",
+                    text: "*Deadlift:* 262,5 kg"
+                },
+                {
+                    type: "mrkdwn",
+                    text: "*Total:* 675 kg"
+                }
+            ]
+        }
+    ]
+}
+
+const compareResultMessageView = {
+    channel: '',
+    text: "Comparison of Roy Lotzwik and Simon Oswald",// Text in the notification
+    emoji: true,
+    unfurl_links: false,
+    blocks: [
+        {
+			type: "section",
+			text: {
+			    type: "mrkdwn",
+				text: "Comparison of <https://www.openpowerlifting.org/u/roylotzwik|Roy Lotzwik> and <https://www.openpowerlifting.org/u/simondanieloswald|Simon Daniel Oswald>"
+			}
+		},
+		{
+			type: "divider"
+		},
+		{
+			type: "section",
+			text: {
+				type: "mrkdwn",
+				text: "*Roy Lotzwik* personal best:"
+			},
+			fields: [
+				{
+					type: "mrkdwn",
+					text: "*Date:* 22.09.2019"
+				},
+				{
+					type: "mrkdwn",
+					text: "*Bodyweight:* 90,5 kg"
+				},
+				{
+					type: "mrkdwn",
+					text: "*Dots:* 435,24"
+				},
+				{
+					type: "mrkdwn",
+					text: "*Total:* 675 kg"
+				}
+			]
+		},
+		{
+			type: "section",
+			fields: [
+				{
+					type: "mrkdwn",
+					text: "*Squat:* 255 kg"
+				},
+				{
+					type: "mrkdwn",
+					text: "*Bench:* 157,5 kg"
+				},
+				{
+					type: "mrkdwn",
+					text: "*Deadlift:* 262,5 kg"
+				}
+			]
+		},
+		{
+			type: "divider"
+		},
+		{
+			type: "section",
+			text: {
+				type: "mrkdwn",
+				text: "*Simon Daniel Oswald* personal best:"
+			},
+			fields: [
+				{
+					type: "mrkdwn",
+					text: "*Date:* 22.09.2019"
+				},
+				{
+					type: "mrkdwn",
+					text: "*Bodyweight:* 98,1 kg"
+				},
+				{
+					type: "mrkdwn",
+					text: "*Dots:* 364,59"
+				},
+				{
+					type: "mrkdwn",
+					text: "*Total:* 587,5 kg"
+				}
+			]
+		},
+		{
+			type: "section",
+			fields: [
+				{
+					type: "mrkdwn",
+					text: "*Squat:* 210 kg"
+				},
+				{
+					type: "mrkdwn",
+					text: "*Bench:* 132,5 kg"
+				},
+				{
+					type: "mrkdwn",
+					text: "*Deadlift:* 245 kg"
+				}
+			]
+		},
+		{
+			type: "divider"
+		},
+		{
+			type: "section",
+			text: {
+				type: "mrkdwn",
+				text: "*Roy Lotzwik wins by 82,5kg Total!*"
+			}
+		}
+    ]
+}
+
 //view builder functions
 function getEntryDialog(subviewName) {
     let baseView = JSON.parse(JSON.stringify(entryDialogView));
@@ -453,13 +655,42 @@ function getEntryDialog(subviewName) {
     }
 
     baseView.view.blocks = baseView.view.blocks.concat(subView);
-    console.log(baseView.view.blocks);
-    console.log(entryDialogView.view.blocks);
     return baseView;
+}
+
+function getResultMessage(channel, option) {
+    let resultMessage;
+
+    switch (option){
+        case 'lastmeet':
+            resultMessage = JSON.parse(JSON.stringify(singlemeetResultMessageView));
+            resultMessage.text = "Last meet of *Roy Lotzwik*";
+            resultMessage.blocks[0].text.text = "Last meet of *Roy Lotzwik* <https://www.openpowerlifting.org/u/roylotzwik|openpowerlifting.org>";
+            break;
+        case 'bestmeet':
+            resultMessage = JSON.parse(JSON.stringify(singlemeetResultMessageView));
+            resultMessage.text = "Best meet of *Roy Lotzwik*";
+            resultMessage.blocks[0].text.text = "Best meet of *Roy Lotzwik* <https://www.openpowerlifting.org/u/roylotzwik|openpowerlifting.org>";
+            break;
+        case 'compare':
+            resultMessage = JSON.parse(JSON.stringify(compareResultMessageView));
+            break;
+        case 'top10':
+            resultMessage = JSON.parse(JSON.stringify(singlemeetResultMessageView));
+            break;
+        default:
+            resultMessage = JSON.parse(JSON.stringify(singlemeetResultMessageView));
+            break;
+    }
+
+    resultMessage.channel = channel;
+
+    return resultMessage;
 }
 
 //exports
 module.exports = {
     getEntryDialog,
+    getResultMessage,
     entryMessageView
 };
