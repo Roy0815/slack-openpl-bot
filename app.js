@@ -19,12 +19,12 @@ const app = new App({
 //get URL
 receiver.router.get('/', (req, res) => {
     console.log("Get /");
-    res.redirect('https://roylotzwik.de');
+    res.redirect('https://roylotzwik.de/open-powerlifting-bot-slack/');
 });
 
 // Commands
-app.command('/meetlookup', async ({ command, ack, client }) => {
-    console.log("/meetlookup started");
+app.command('/openpowerlifting', async ({ command, ack, client }) => {
+    console.log("/openpowerlifting started");
     try{
         await ack();
         let view = slack_helper.getEntryDialog();
@@ -121,10 +121,29 @@ app.action('compare_criteria_input', async ({ ack }) => {
     await ack();
 });
 
-//view submissions
-app.view('entrydialog', async ({ ack, body, view, client }) => {
+app.action('entrydialog_conversations_select', async ({ ack }) => {
+    console.log("action entrydialog_conversations_select started");
     await ack();
-    console.log(view['state']['values']['entrydialog_radiobuttons'].entrydialog_radiobuttons.selected_option.value);
+});
+
+//view submissions
+app.view('entrydialog', async ({ body, ack, client, payload }) => {
+    console.log("View entrydialog submitted");
+    await ack();
+
+    if (!body.view.state.values.entrydialog_radiobuttons.entrydialog_radiobuttons.selected_option) return; //nothing selected
+
+    let option = body.view.state.values.entrydialog_radiobuttons.entrydialog_radiobuttons.selected_option.value;
+    let channel = body.view.state.values.entrydialog_conversations_select.entrydialog_conversations_select.selected_conversation;
+
+    let retView = slack_helper.getResultMessage(channel, option);
+    console.log(retView);
+    try {
+        let result = await client.chat.postMessage(retView);
+        if (result.ok) console.log('ok'); else console.log('not ok');
+    } catch (error) {
+        console.error(error);
+    }
 });
 
 //start the app
