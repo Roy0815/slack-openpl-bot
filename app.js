@@ -149,17 +149,9 @@ app.command(
 
 app.command('/helloworld', async ({ command, ack, client }) => {
     console.log('/helloworld started')
-
     await ack()
-    let view = slack_helper.getEntryDialog()
-    view.trigger_id = command.trigger_id
 
-    try {
-        let result = await client.views.open(view)
-        console.log(result.ok ? 'ok' : 'not ok')
-    } catch (error) {
-        console.log(error)
-    }
+    db_helper.selectUser(command.text)
 })
 
 //events
