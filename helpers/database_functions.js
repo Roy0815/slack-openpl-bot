@@ -129,7 +129,8 @@ function selectUser(name) {
         `WHERE name LIKE '${namePattern}' ` +
         'ORDER BY name ASC, date DESC;'
 
-    pool.connect((err, client, done) => {
+    return pool.query(query)
+    /*pool.connect((err, client, done) => {
         if (err) throw err
         client.query(query, (err, res) => {
             if (err) {
@@ -141,7 +142,7 @@ function selectUser(name) {
             }
             done()
         })
-    })
+    })*/
 }
 
 function buildNamePattern(name) {
