@@ -3,8 +3,8 @@
 const { App, ExpressReceiver } = require('@slack/bolt') //, LogLevel
 //const bodyParser = require('body-parser')
 const { CronJob } = require('cron')
-const db_helper = require('./database_functions/database_helper')
-const slack_helper = require('./slack_functions/slack_helper')
+const db_funcs = require('./helpers/database_functions')
+const slack_funcs = require('./helpers/slack_funcs')
 
 // Create receiver
 const receiver = new ExpressReceiver({
@@ -26,17 +26,17 @@ receiver.router.get('/', (req, res) => {
 
 // Commands
 app.command(
-    `/${slack_helper.commandDialog}`,
+    `/${slack_funcs.commandDialog}`,
     async ({ command, ack, client, respond }) => {
-        console.log(`command /${slack_helper.commandDialog} started`)
+        console.log(`command /${slack_funcs.commandDialog} started`)
         await ack()
 
         try {
             if (command.text.includes('help')) {
-                let result = await respond(slack_helper.helpView)
+                let result = await respond(slack_funcs.helpView)
                 console.log(result.statusText)
             } else {
-                let view = slack_helper.getEntryDialog()
+                let view = slack_funcs.getEntryDialog()
                 view.trigger_id = command.trigger_id
 
                 let result = await client.views.open(view)
@@ -49,14 +49,14 @@ app.command(
 )
 
 app.command(
-    `/${slack_helper.commandLastmeet}`,
+    `/${slack_funcs.commandLastmeet}`,
     async ({ command, ack, respond }) => {
-        console.log(`command /${slack_helper.commandLastmeet} started`)
+        console.log(`command /${slack_funcs.commandLastmeet} started`)
         await ack()
 
-        let retView = slack_helper.getResultMessage(
+        let retView = slack_funcs.getResultMessage(
             command.channel,
-            slack_helper.commandLastmeet
+            slack_funcs.commandLastmeet
         )
         retView.response_type = 'in_channel'
 
@@ -70,14 +70,14 @@ app.command(
 )
 
 app.command(
-    `/${slack_helper.commandBestmeet}`,
+    `/${slack_funcs.commandBestmeet}`,
     async ({ command, ack, respond }) => {
-        console.log(`command /${slack_helper.commandBestmeet} started`)
+        console.log(`command /${slack_funcs.commandBestmeet} started`)
         await ack()
 
-        let retView = slack_helper.getResultMessage(
+        let retView = slack_funcs.getResultMessage(
             command.channel,
-            slack_helper.commandBestmeet
+            slack_funcs.commandBestmeet
         )
         retView.response_type = 'in_channel'
 
@@ -91,14 +91,14 @@ app.command(
 )
 
 app.command(
-    `/${slack_helper.commandCompare}`,
+    `/${slack_funcs.commandCompare}`,
     async ({ command, ack, respond }) => {
-        console.log(`command /${slack_helper.commandCompare} started`)
+        console.log(`command /${slack_funcs.commandCompare} started`)
         await ack()
 
-        let retView = slack_helper.getResultMessage(
+        let retView = slack_funcs.getResultMessage(
             command.channel,
-            slack_helper.commandCompare
+            slack_funcs.commandCompare
         )
         retView.response_type = 'in_channel'
 
@@ -112,9 +112,9 @@ app.command(
 )
 
 app.command(
-    `/${slack_helper.commandMeetlink}`,
+    `/${slack_funcs.commandMeetlink}`,
     async ({ command, ack, respond }) => {
-        console.log(`command /${slack_helper.commandMeetlink} started`)
+        console.log(`command /${slack_funcs.commandMeetlink} started`)
         await ack()
 
         try {
@@ -130,9 +130,9 @@ app.command(
 )
 
 app.command(
-    `/${slack_helper.commandRanking}`,
+    `/${slack_funcs.commandRanking}`,
     async ({ command, ack, respond }) => {
-        console.log(`command /${slack_helper.commandRanking} started`)
+        console.log(`command /${slack_funcs.commandRanking} started`)
         await ack()
 
         try {
@@ -147,18 +147,25 @@ app.command(
     }
 )
 
-app.command('/helloworld', async ({ command, ack, client }) => {
+app.command('/helloworld', async ({ command, ack, client, respond }) => {
     console.log('/helloworld started')
     await ack()
 
-    db_helper.selectUser(command.text)
+    let { rows } = await db_funcs.selectUser(command.text)
+    let retView = slack_funcs.getResultMessage(
+        '',
+        slack_funcs.commandLastmeet,
+        rows
+    )
+
+    respond(retView)
 })
 
 //events
 app.event('app_home_opened', async ({ event, client }) => {
     console.log('event app_home_opened started')
 
-    let view = slack_helper.homeView
+    let view = slack_funcs.homeView
     view.user_id = event.user
 
     try {
@@ -172,7 +179,7 @@ app.event('app_home_opened', async ({ event, client }) => {
 app.event('app_mention', async ({ event, client }) => {
     console.log('event app_mention started')
     try {
-        let entryMessageView = slack_helper.entryMessageView
+        let entryMessageView = slack_funcs.entryMessageView
 
         entryMessageView.channel = event.channel
         entryMessageView.user = event.user
@@ -189,7 +196,7 @@ app.event('app_mention', async ({ event, client }) => {
 app.action('entrymessage_start', async ({ body, client, ack }) => {
     console.log('action entrymessage_start started')
     await ack()
-    let view = slack_helper.getEntryDialog()
+    let view = slack_funcs.getEntryDialog()
     view.trigger_id = body.trigger_id
 
     try {
@@ -216,9 +223,7 @@ app.action('entrymessage_cancel', async ({ respond, ack }) => {
 app.action('entrydialog_radiobuttons', async ({ ack, body, client }) => {
     console.log('action entrydialog_radiobuttons started')
     await ack()
-    let view = slack_helper.getEntryDialog(
-        body.actions[0].selected_option.value
-    )
+    let view = slack_funcs.getEntryDialog(body.actions[0].selected_option.value)
     view.view_id = body.view.id
 
     try {
@@ -277,7 +282,7 @@ app.view('entrydialog', async ({ body, ack, client, payload }) => {
         body.view.state.values.entrydialog_conversations_select
             .entrydialog_conversations_select.selected_conversation
 
-    let retView = slack_helper.getResultMessage(channel, option)
+    let retView = slack_funcs.getResultMessage(channel, option)
 
     try {
         let result = await client.chat.postMessage(retView)
