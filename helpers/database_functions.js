@@ -124,7 +124,7 @@ function selectUser(name) {
     let namePattern = buildNamePattern(name)
 
     let query =
-        'SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, place, dots, best3squatkg, best3benchkg, best3deadliftkg, totalkg ' +
+        'SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, bodyweightkg, place, dots, best3squatkg, best3benchkg, best3deadliftkg, totalkg ' +
         'FROM public.lifterdata_csv ' +
         `WHERE name LIKE '${namePattern}' ` +
         'ORDER BY name ASC, date DESC;'
