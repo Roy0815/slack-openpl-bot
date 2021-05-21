@@ -20,7 +20,7 @@ const app = new App({
 
 //get URL
 receiver.router.get('/', (req, res) => {
-    console.log('Get /')
+    console.log('Get / started')
     res.redirect('https://roylotzwik.de/open-powerlifting-bot-slack/')
 })
 
@@ -96,10 +96,7 @@ app.command(
         console.log(`command /${slack_funcs.commandCompare} started`)
         await ack()
 
-        let retView = slack_funcs.getResultMessage(
-            command.channel,
-            slack_funcs.commandCompare
-        )
+        let retView = await slack_funcs.getCompareResult(command)
         retView.response_type = 'in_channel'
 
         try {
@@ -119,7 +116,9 @@ app.command(
 
         try {
             let result = await respond({
-                text: `Here is the link to the meet that <@${command.user_id}> requested: <https://www.openpowerlifting.org/m/bvdk/1938|2019 BVDK BWG KDK Classic>`,
+                text: `Here is the link to the meet that <@${
+                    command.user_id
+                }> requested: ${slack_funcs.getMeetLink()}`,
                 response_type: 'in_channel'
             })
             console.log(result.statusText)
@@ -136,8 +135,9 @@ app.command(
         await ack()
 
         try {
+            // prettier-ignore
             let result = await respond({
-                text: `Here is the link to the ranking that <@${command.user_id}> requested: <https://www.openpowerlifting.org/rankings/ipf93/bvdk/men/20-23|-93 kg, men, Juniors, BVDK>`,
+                text: `Here is the link to the ranking that <@${command.user_id}> requested: ${slack_funcs.getRankingLink()}`,
                 response_type: 'in_channel'
             })
             console.log(result.statusText)
@@ -152,11 +152,7 @@ app.command('/helloworld', async ({ command, ack, client, respond }) => {
     await ack()
 
     let { rows } = await db_funcs.selectUser(command.text)
-    let retView = slack_funcs.getResultMessage(
-        '',
-        slack_funcs.commandLastmeet,
-        rows
-    )
+    let retView = slack_funcs.getLastmeetResult('', rows[0])
 
     respond(retView)
 })
