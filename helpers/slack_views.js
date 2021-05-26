@@ -1,41 +1,59 @@
+//file with all frontend data for slack
+//function names
+const commandDialog = 'openpl'
+const commandLastmeet = 'lastmeet'
+const commandBestmeet = 'bestmeet'
+const commandCompare = 'compare'
+const commandMeetlink = 'meetlink'
+const commandRanking = 'ranking'
+
+//views for multiple reference
+const helpSubView = [
+    {
+        type: 'section',
+        text: {
+            type: 'mrkdwn',
+            text: 'You can start actions in the following ways:'
+        }
+    },
+    {
+        type: 'section',
+        text: {
+            type: 'mrkdwn',
+            text: '*1️⃣ Use the `/openpl` command.* Type `/openpl` to start a dialog where you can interactively select the information you want to display. In the conversation select you have to specify the channel where I will post the result.'
+        }
+    },
+    {
+        type: 'section',
+        text: {
+            type: 'mrkdwn',
+            text: "*2️⃣ Use the other `/` commands.* For each action there is also a _shortcut_ `/` command with a specific set of options. Using those commands won't open a dialog. All commands and options are listed below:\n`/lastmeet [name]`\nreturns the last meet of the person\n\n`/bestmeet [name]; [criteria]`\nreturns the best meet of the person by criteria\n\n`/compare [names]; [criteria]; [lift]`\ncompares two or more lifters by criteria and lift\n\n`/meetlink [meetname]`\nreturns the link to the meet\n\n`/ranking [filter]`\nreturns the link to openpowerlifting.org with the specified filters applied"
+        }
+    },
+    {
+        type: 'section',
+        text: {
+            type: 'mrkdwn',
+            text: '*3️⃣ Mention the bot in a channel or thread `@Openpowerlifting Bot`.* You can use this method as kind of a shortcut too, but more important: this is the only way you can get the results into a thread.\nUse it as follows: `@Openpowerlifting Bot [command]; [options]`\n'
+        }
+    }
+]
+
 //export views
 module.exports = {
-    helpSubView = [
-        {
-            type: 'section',
-            text: {
-                type: 'mrkdwn',
-                text: 'You can start actions in the following ways:'
-            }
-        },
-        {
-            type: 'section',
-            text: {
-                type: 'mrkdwn',
-                text: '*1️⃣ Use the `/openpl` command.* Type `/openpl` to start a dialog where you can interactively select the information you want to display. In the conversation select you have to specify the channel where I will post the result.'
-            }
-        },
-        {
-            type: 'section',
-            text: {
-                type: 'mrkdwn',
-                text: "*2️⃣ Use the other `/` commands.* For each action there is also a _shortcut_ `/` command with a specific set of options. Using those commands won't open a dialog. All commands and options are listed below:\n`/lastmeet [name]`\nreturns the last meet of the person\n\n`/bestmeet [name]; [criteria]`\nreturns the best meet of the person by criteria\n\n`/compare [names]; [criteria]; [lift]`\ncompares two or more lifters by criteria and lift\n\n`/meetlink [meetname]`\nreturns the link to the meet\n\n`/ranking [filter]`\nreturns the link to openpowerlifting.org with the specified filters applied"
-            }
-        },
-        {
-            type: 'section',
-            text: {
-                type: 'mrkdwn',
-                text: '*3️⃣ Mention the bot in a channel or thread `@Openpowerlifting Bot`.* You can use this method as kind of a shortcut too, but more important: this is the only way you can get the results into a thread.\nUse it as follows: `@Openpowerlifting Bot [command]; [options]`\n'
-            }
-        }
-    ],
+    commandDialog,
+    commandLastmeet,
+    commandBestmeet,
+    commandCompare,
+    commandMeetlink,
+    commandRanking,
+    helpSubView,
 
-    helpView = {
+    helpView: {
         blocks: [helpSubView[0], helpSubView[1], helpSubView[2], helpSubView[3]]
     },
 
-    homeView = {
+    homeView: {
         // Use the user ID associated with the event
         user_id: '',
         view: {
@@ -78,7 +96,7 @@ module.exports = {
         }
     },
 
-    entryMessageView = {
+    entryMessageView: {
         channel: '',
         text: 'You mentioned me in your message, do you want to start a lookup?', //this is required as a preview
         user: '',
@@ -118,7 +136,7 @@ module.exports = {
         ]
     },
 
-    entryDialogView = {
+    entryDialogView: {
         trigger_id: '',
         view: {
             type: 'modal',
@@ -214,7 +232,7 @@ module.exports = {
         }
     },
 
-    lastmeetSubView = [
+    lastmeetSubView: [
         {
             type: 'divider'
         },
@@ -237,7 +255,7 @@ module.exports = {
         }
     ],
 
-    bestmeetSubView = [
+    bestmeetSubView: [
         {
             type: 'divider'
         },
@@ -305,7 +323,7 @@ module.exports = {
         }
     ],
 
-    compareSubView = [
+    compareSubView: [
         {
             type: 'divider'
         },
@@ -390,7 +408,7 @@ module.exports = {
         }
     ],
 
-    top10SubView = [
+    top10SubView: [
         {
             type: 'divider'
         },
@@ -534,7 +552,7 @@ module.exports = {
         }
     ],
 
-    singlemeetResultMessageView = {
+    singlemeetResultMessageView: {
         channel: '',
         text: '', // Text in the notification, set in the method
         emoji: true,
@@ -602,7 +620,7 @@ module.exports = {
         ]
     },
 
-    compareResultMessageView = {
+    compareResultMessageView: {
         channel: '',
         text: 'Comparison of Roy Lotzwik and Simon Oswald', // Text in the notification
         emoji: true,
