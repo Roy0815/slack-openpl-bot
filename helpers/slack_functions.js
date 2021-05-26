@@ -3,30 +3,35 @@ const slack_views = require('./slack_views')
 
 //exports
 module.exports = {
+    getHelpView,
     getEntryDialog,
-    getResultMessage,
     getLastmeetResult,
     getBestmeetResult,
     getCompareResult,
     getRankingLink,
     getMeetLink,
-    commandDialog,
-    commandLastmeet,
-    commandBestmeet,
-    commandCompare,
-    commandMeetlink,
-    commandRanking
+    commandDialog: slack_views.commandDialog,
+    commandLastmeet: slack_views.commandLastmeet,
+    commandBestmeet: slack_views.commandBestmeet,
+    commandCompare: slack_views.commandCompare,
+    commandMeetlink: slack_views.commandMeetlink,
+    commandRanking: slack_views.commandRanking
 }
 
-//functions
-const commandDialog = 'openpl'
-const commandLastmeet = 'lastmeet'
-const commandBestmeet = 'bestmeet'
-const commandCompare = 'compare'
-const commandMeetlink = 'meetlink'
-const commandRanking = 'ranking'
-
 //view builder functions
+function getHelpView(command) {
+    let helpView = slack_views.helpView
+    helpView.blocks.push({
+        type: 'section',
+        text: {
+            type: 'mrkdwn',
+            text: `Find more info here: <slack://app?team=${command.team_id}&id=${command.api_app_id}&tab=home|App Home>`
+        }
+    })
+
+    return helpView
+}
+
 function getEntryDialog(subviewName) {
     let baseView = JSON.parse(JSON.stringify(slack_views.entryDialogView))
     let subView
