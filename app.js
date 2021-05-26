@@ -4,7 +4,7 @@ const { App, ExpressReceiver } = require('@slack/bolt') //, LogLevel
 //const bodyParser = require('body-parser')
 const { CronJob } = require('cron')
 const db_funcs = require('./helpers/database_functions')
-const slack_funcs = require('./helpers/slack_funcs')
+const slack_funcs = require('./helpers/slack_functions')
 
 // Create receiver
 const receiver = new ExpressReceiver({
@@ -33,7 +33,7 @@ app.command(
 
         try {
             if (command.text.includes('help')) {
-                let result = await respond(slack_funcs.helpView)
+                let result = await respond(slack_funcs.getHelpView(command))
                 console.log(result.statusText)
             } else {
                 let view = slack_funcs.getEntryDialog()
@@ -54,18 +54,17 @@ app.command(
         console.log(`command /${slack_funcs.commandLastmeet} started`)
         await ack()
 
-        let retView = slack_funcs.getResultMessage(
-            command.channel,
-            slack_funcs.commandLastmeet
-        )
-        retView.response_type = 'in_channel'
+        let users = await db_funcs.selectUsers([command.text])
 
-        try {
-            let result = await respond(retView)
-            console.log(result.statusText)
-        } catch (error) {
-            console.log(error)
+        if (users.length > 1) {
+            console.log(users)
+            return
         }
+
+        let { rows } = await db_funcs.selectLastMeet(command.text)
+        let retView = slack_funcs.getLastmeetResult('', rows[0])
+
+        respond(retView)
     }
 )
 
@@ -151,7 +150,14 @@ app.command('/helloworld', async ({ command, ack, client, respond }) => {
     console.log('/helloworld started')
     await ack()
 
-    let { rows } = await db_funcs.selectUser(command.text)
+    let users = await db_funcs.selectUsers([command.text])
+
+    if (users.length > 1) {
+        //dialog
+        return
+    }
+
+    let { rows } = await db_funcs.selectLastMeet(command.text)
     let retView = slack_funcs.getLastmeetResult('', rows[0])
 
     respond(retView)
