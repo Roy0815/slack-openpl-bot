@@ -10,12 +10,21 @@ const zipPath = '/var/lib/files/openpowerlifting-latest.zip'
 const openPLurl =
     'https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip'
 
+const pool = new Pool({
+    user: process.env.DB_POSTGRES_USER,
+    host: process.env.DB_POSTGRES_HOST,
+    database: process.env.DB_POSTGRES_DATABASE,
+    password: process.env.DB_POSTGRES_PASSWORD,
+    port: process.env.DB_POSTGRES_PORT
+})
+
 module.exports = {
     startUpdateDatabase: function () {
         console.log('Database update started')
         downloadZip()
     },
-    selectUser
+    selectUsers,
+    selectLastMeet
 }
 
 function unzipFolder() {
@@ -68,14 +77,6 @@ function downloadZip() {
 function updateDatabase() {
     console.log('Database query started')
 
-    let pool = new Pool({
-        user: process.env.DB_POSTGRES_USER,
-        host: process.env.DB_POSTGRES_HOST,
-        database: process.env.DB_POSTGRES_DATABASE,
-        password: process.env.DB_POSTGRES_PASSWORD,
-        port: process.env.DB_POSTGRES_PORT
-    })
-
     let query =
         'CREATE TEMP TABLE lifterdata_csv_temp ON COMMIT DROP ' +
         'AS SELECT * FROM public.lifterdata_csv WITH NO DATA;' +
@@ -87,62 +88,43 @@ function updateDatabase() {
         'INSERT INTO public.lifterdata_csv ' +
         'SELECT * FROM lifterdata_csv_temp ON CONFLICT DO NOTHING;'
 
-    pool.connect((err, client, done) => {
-        if (err) throw err
-        try {
-            client.query(query, (err, res) => {
-                if (err) {
-                    console.log('Error in Database query')
-                    console.log(err.stack)
-                } else {
-                    console.log('Database updated!')
-                    console.log(res?.[4]) //only log the insert
-                }
-                fs.unlink(csvPath, (err) => {
-                    if (err) {
-                        console.log(err)
-                    }
-                }) // delete CSV
-                console.log('CSV deleted')
-                done()
-            })
-        } finally {
-            //done()
+    pool.query(query, (err, res) => {
+        if (err) {
+            console.log('Error in Database query')
+            console.log(err.stack)
+        } else {
+            console.log('Database updated!')
+            console.log(res?.[4]) //only log the insert
         }
+        fs.unlink(csvPath, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        }) // delete CSV
+        console.log('CSV deleted')
+        done()
     })
 }
 
-function selectUser(name) {
-    let pool = new Pool({
-        user: process.env.DB_POSTGRES_USER,
-        host: process.env.DB_POSTGRES_HOST,
-        database: process.env.DB_POSTGRES_DATABASE,
-        password: process.env.DB_POSTGRES_PASSWORD,
-        port: process.env.DB_POSTGRES_PORT
-    })
-
-    let namePattern = buildNamePattern(name)
-
+function selectLastMeet(name) {
     let query =
         'SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, bodyweightkg, place, dots, best3squatkg, best3benchkg, best3deadliftkg, totalkg ' +
         'FROM public.lifterdata_csv ' +
-        `WHERE name LIKE '${namePattern}' ` +
+        `WHERE name LIKE '${buildNamePattern(name)}' ` +
         'ORDER BY name ASC, date DESC;'
 
     return pool.query(query)
-    /*pool.connect((err, client, done) => {
-        if (err) throw err
-        client.query(query, (err, res) => {
-            if (err) {
-                console.log('Error in Database query')
-                console.log(err.stack)
-            } else {
-                console.log('Select successful')
-                console.log(res)
-            }
-            done()
-        })
-    })*/
+}
+
+async function selectUsers(names) {
+    let query =
+        'SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, totalkg ' +
+        'FROM public.lifterdata_csv ' +
+        `WHERE name LIKE '${buildNamePattern(names[0])}' ` +
+        'ORDER BY name ASC, date DESC;'
+
+    let result = await pool.query(query)
+    return result.rows
 }
 
 function buildNamePattern(name) {
