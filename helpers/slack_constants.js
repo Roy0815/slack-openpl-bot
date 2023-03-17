@@ -5,4 +5,6 @@ module.exports = {
   commandCompare: "compare",
   commandMeetlink: "meetlink",
   commandRanking: "ranking",
+  criteria: ["absolute", "dots", "wilks"],
+  lift: ["squat", "bench", "deadlift", "total"],
 };
