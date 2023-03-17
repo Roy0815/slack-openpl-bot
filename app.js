@@ -1,8 +1,8 @@
 //This will be an App that allows Slack users to get Data from openpowerlifting.org directly into the workspace
-
 const { App } = require("@slack/bolt");
 const db_funcs = require("./helpers/database_functions");
 const slack_funcs = require("./helpers/slack_functions");
+const slack_cons = require("./slack_views");
 
 // Create Bolt App
 const app = new App({
@@ -13,9 +13,9 @@ const app = new App({
 
 //******************** Commands ********************//
 app.command(
-  `/${slack_funcs.commandDialog}`,
+  `/${slack_cons.commandDialog}`,
   async ({ command, ack, client, respond }) => {
-    console.log(`command /${slack_funcs.commandDialog} started`);
+    console.log(`command /${slack_cons.commandDialog} started`);
     await ack();
 
     try {
@@ -36,9 +36,9 @@ app.command(
 );
 
 app.command(
-  `/${slack_funcs.commandLastmeet}`,
+  `/${slack_cons.commandLastmeet}`,
   async ({ command, ack, respond }) => {
-    console.log(`command /${slack_funcs.commandLastmeet} started`);
+    console.log(`command /${slack_cons.commandLastmeet} started`);
     await ack();
 
     let users = await db_funcs.selectUsers([command.text]);
@@ -56,14 +56,14 @@ app.command(
 );
 
 app.command(
-  `/${slack_funcs.commandBestmeet}`,
+  `/${slack_cons.commandBestmeet}`,
   async ({ command, ack, respond }) => {
-    console.log(`command /${slack_funcs.commandBestmeet} started`);
+    console.log(`command /${slack_cons.commandBestmeet} started`);
     await ack();
 
     let retView = slack_funcs.getResultMessage(
       command.channel,
-      slack_funcs.commandBestmeet
+      slack_cons.commandBestmeet
     );
     retView.response_type = "in_channel";
 
@@ -77,9 +77,9 @@ app.command(
 );
 
 app.command(
-  `/${slack_funcs.commandCompare}`,
+  `/${slack_cons.commandCompare}`,
   async ({ command, ack, respond }) => {
-    console.log(`command /${slack_funcs.commandCompare} started`);
+    console.log(`command /${slack_cons.commandCompare} started`);
     await ack();
 
     let retView = await slack_funcs.getCompareResult(command);
@@ -95,9 +95,9 @@ app.command(
 );
 
 app.command(
-  `/${slack_funcs.commandMeetlink}`,
+  `/${slack_cons.commandMeetlink}`,
   async ({ command, ack, respond }) => {
-    console.log(`command /${slack_funcs.commandMeetlink} started`);
+    console.log(`command /${slack_cons.commandMeetlink} started`);
     await ack();
 
     try {
@@ -115,9 +115,9 @@ app.command(
 );
 
 app.command(
-  `/${slack_funcs.commandRanking}`,
+  `/${slack_cons.commandRanking}`,
   async ({ command, ack, respond }) => {
-    console.log(`command /${slack_funcs.commandRanking} started`);
+    console.log(`command /${slack_cons.commandRanking} started`);
     await ack();
 
     try {

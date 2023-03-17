@@ -1,12 +1,7 @@
 //file with all frontend data for slack
-//function names
-const commandDialog = "openpl";
-const commandLastmeet = "lastmeet";
-const commandBestmeet = "bestmeet";
-const commandCompare = "compare";
-const commandMeetlink = "meetlink";
-const commandRanking = "ranking";
+const slack_cons = require("./slack_views");
 
+//function names
 //views for multiple reference
 const helpSubView = [
   {
@@ -41,12 +36,6 @@ const helpSubView = [
 
 //export views
 module.exports = {
-  commandDialog,
-  commandLastmeet,
-  commandBestmeet,
-  commandCompare,
-  commandMeetlink,
-  commandRanking,
   helpSubView,
 
   helpView: {
@@ -173,7 +162,7 @@ module.exports = {
                   text: "Last Meet",
                   emoji: true,
                 },
-                value: commandLastmeet,
+                value: slack_cons.commandLastmeet,
               },
               {
                 text: {
@@ -181,7 +170,7 @@ module.exports = {
                   text: "Best Meet",
                   emoji: true,
                 },
-                value: commandBestmeet,
+                value: slack_cons.commandBestmeet,
               },
               {
                 text: {
@@ -189,7 +178,7 @@ module.exports = {
                   text: "Compare",
                   emoji: true,
                 },
-                value: commandCompare,
+                value: slack_cons.commandCompare,
               },
               {
                 text: {
@@ -197,7 +186,7 @@ module.exports = {
                   text: "Meet Link",
                   emoji: true,
                 },
-                value: commandMeetlink,
+                value: slack_cons.commandMeetlink,
               },
               {
                 text: {
@@ -205,7 +194,7 @@ module.exports = {
                   text: "Ranking by criteria",
                   emoji: true,
                 },
-                value: commandRanking,
+                value: slack_cons.commandRanking,
               },
             ],
           },

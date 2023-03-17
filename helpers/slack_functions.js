@@ -1,18 +1,34 @@
 // file with everything for slack interactions
 const slack_views = require("./slack_views");
+const slack_cons = require("./slack_views");
 
 //functions
-function getHelpView(command) {
+function getHelpView({ team_id, api_app_id }) {
   let helpView = slack_views.helpView;
   helpView.blocks.push({
     type: "section",
     text: {
       type: "mrkdwn",
-      text: `Find more info here: <slack://app?team=${command.team_id}&id=${command.api_app_id}&tab=home|App Home>`,
+      text: `Find more info here: <slack://app?team=${team_id}&id=${api_app_id}&tab=home|App Home>`,
     },
   });
 
   return helpView;
+}
+
+function getResultMessage({ command, text, channel }) {
+  let view;
+
+  switch (command) {
+    case slack_cons.commandLastmeet:
+      getLastmeetResult();
+      break;
+
+    default:
+      break;
+  }
+
+  return view;
 }
 
 function getEntryMessage({ channel, user, thread_ts }) {
@@ -140,6 +156,7 @@ function getMeetLink(meetname) {
 //exports
 module.exports = {
   getHelpView,
+  getResultMessage,
   getEntryDialog,
   getEntryMessage,
   getLastmeetResult,
@@ -147,10 +164,4 @@ module.exports = {
   getCompareResult,
   getRankingLink,
   getMeetLink,
-  commandDialog: slack_views.commandDialog,
-  commandLastmeet: slack_views.commandLastmeet,
-  commandBestmeet: slack_views.commandBestmeet,
-  commandCompare: slack_views.commandCompare,
-  commandMeetlink: slack_views.commandMeetlink,
-  commandRanking: slack_views.commandRanking,
 };
