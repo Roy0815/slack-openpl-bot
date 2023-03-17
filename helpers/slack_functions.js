@@ -1,24 +1,7 @@
 // file with everything for slack interactions
 const slack_views = require("./slack_views");
 
-//exports
-module.exports = {
-  getHelpView,
-  getEntryDialog,
-  getLastmeetResult,
-  getBestmeetResult,
-  getCompareResult,
-  getRankingLink,
-  getMeetLink,
-  commandDialog: slack_views.commandDialog,
-  commandLastmeet: slack_views.commandLastmeet,
-  commandBestmeet: slack_views.commandBestmeet,
-  commandCompare: slack_views.commandCompare,
-  commandMeetlink: slack_views.commandMeetlink,
-  commandRanking: slack_views.commandRanking,
-};
-
-//view builder functions
+//functions
 function getHelpView(command) {
   let helpView = slack_views.helpView;
   helpView.blocks.push({
@@ -30,6 +13,17 @@ function getHelpView(command) {
   });
 
   return helpView;
+}
+
+function getEntryMessage({ channel, user, thread_ts }) {
+  let view = JSON.parse(JSON.stringify(slack_views.entryMessageView));
+
+  view.channel = channel;
+  view.user = user;
+
+  if (thread_ts) view.thread_ts = thread_ts;
+
+  return view;
 }
 
 function getEntryDialog(subviewName) {
@@ -142,3 +136,21 @@ function getRankingLink(filters) {
 function getMeetLink(meetname) {
   return "<https://www.openpowerlifting.org/m/bvdk/1938|2019 BVDK BWG KDK Classic>";
 }
+
+//exports
+module.exports = {
+  getHelpView,
+  getEntryDialog,
+  getEntryMessage,
+  getLastmeetResult,
+  getBestmeetResult,
+  getCompareResult,
+  getRankingLink,
+  getMeetLink,
+  commandDialog: slack_views.commandDialog,
+  commandLastmeet: slack_views.commandLastmeet,
+  commandBestmeet: slack_views.commandBestmeet,
+  commandCompare: slack_views.commandCompare,
+  commandMeetlink: slack_views.commandMeetlink,
+  commandRanking: slack_views.commandRanking,
+};

@@ -247,13 +247,9 @@ app.event("app_home_opened", async ({ event, client }) => {
 app.event("app_mention", async ({ event, client }) => {
   console.log("event app_mention started");
   try {
-    let entryMessageView = slack_funcs.entryMessageView;
-
-    entryMessageView.channel = event.channel;
-    entryMessageView.user = event.user;
-    if (event.thread_ts) entryMessageView.thread_ts = event.thread_ts;
-
-    let result = await client.chat.postEphemeral(entryMessageView);
+    let result = await client.chat.postEphemeral(
+      slack_funcs.getEntryMessage(event)
+    );
     console.log(result.ok ? "ok" : "not ok");
   } catch (error) {
     console.log(error);
