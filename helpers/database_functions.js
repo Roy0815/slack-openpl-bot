@@ -102,7 +102,6 @@ function updateDatabase() {
       }
     }); // delete CSV
     console.log("CSV deleted");
-    done();
   });
 }
 

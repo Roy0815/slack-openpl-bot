@@ -129,6 +129,15 @@ app.command(
   }
 );
 
+app.command("/update_database", async ({ ack, respond }) => {
+  console.log("/update_database");
+  await ack();
+
+  db_funcs.startUpdateDatabase();
+
+  respond("Database update started");
+});
+
 app.command("/helloworld", async ({ command, ack, client, respond }) => {
   console.log("/helloworld started");
   await ack();
