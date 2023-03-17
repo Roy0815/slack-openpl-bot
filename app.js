@@ -2,7 +2,7 @@
 const { App } = require("@slack/bolt");
 const db_funcs = require("./helpers/database_functions");
 const slack_funcs = require("./helpers/slack_functions");
-const slack_cons = require("./slack_views");
+const slack_cons = require("./helpers/slack_constants");
 
 // Create Bolt App
 const app = new App({
@@ -41,17 +41,13 @@ app.command(
     console.log(`command /${slack_cons.commandLastmeet} started`);
     await ack();
 
-    let users = await db_funcs.selectUsers([command.text]);
-
-    if (users.length > 1) {
-      console.log(users);
-      return;
-    }
-
-    let { rows } = await db_funcs.selectLastMeet(command.text);
-    let retView = slack_funcs.getLastmeetResult("", rows[0]);
-
-    respond(retView);
+    respond(
+      await slack_funcs.getResultMessage({
+        command: slack_cons.commandLastmeet,
+        channel: command.channel_id,
+        text: command.text,
+      })
+    );
   }
 );
 

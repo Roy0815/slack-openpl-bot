@@ -1,94 +1,59 @@
 // file with everything for slack interactions
 const slack_views = require("./slack_views");
-const slack_cons = require("./slack_views");
+const slack_cons = require("./slack_constants");
+const db_funcs = require("./database_functions");
 
-//functions
-function getHelpView({ team_id, api_app_id }) {
-  let helpView = slack_views.helpView;
-  helpView.blocks.push({
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: `Find more info here: <slack://app?team=${team_id}&id=${api_app_id}&tab=home|App Home>`,
-    },
-  });
-
-  return helpView;
-}
-
-function getResultMessage({ command, text, channel }) {
-  let view;
-
-  switch (command) {
-    case slack_cons.commandLastmeet:
-      getLastmeetResult();
-      break;
-
-    default:
-      break;
-  }
-
-  return view;
-}
-
-function getEntryMessage({ channel, user, thread_ts }) {
-  let view = JSON.parse(JSON.stringify(slack_views.entryMessageView));
-
-  view.channel = channel;
-  view.user = user;
-
-  if (thread_ts) view.thread_ts = thread_ts;
-
-  return view;
-}
-
-function getEntryDialog(subviewName) {
-  let baseView = JSON.parse(JSON.stringify(slack_views.entryDialogView));
-  let subView;
-
-  switch (subviewName) {
-    case "lastmeet":
-      subView = slack_views.lastmeetSubView;
-      break;
-    case "bestmeet":
-      subView = slack_views.bestmeetSubView;
-      break;
-    case "compare":
-      subView = slack_views.compareSubView;
-      break;
-    case "top10":
-      subView = slack_views.top10SubView;
-      break;
-    default:
-      return baseView;
-  }
-
-  baseView.view.blocks = baseView.view.blocks.concat(subView);
-  return baseView;
-}
-
-function getLastmeetResult(channel, person) {
+//----------------------------------------------------------------
+// Private functions
+//----------------------------------------------------------------
+function getSingleMeetResultView({ personObj, channel }) {
   let resultMessage = JSON.parse(
     JSON.stringify(slack_views.singlemeetResultMessageView)
   );
-  resultMessage.text = `Last meet of *${person.name}*`; //message preview
-  resultMessage.blocks[0].text.text = `Last meet of *${person.name}* <https://www.openpowerlifting.org/u/roylotzwik|openpowerlifting.org>`;
 
-  resultMessage.blocks[0].fields[0].text = `*Meet:* ${person.meetname}`;
-  resultMessage.blocks[0].fields[1].text = `*Date:* ${person.date}`;
+  resultMessage.blocks[0].fields[0].text = `*Meet:* ${personObj.meetname}`;
+  resultMessage.blocks[0].fields[1].text = `*Date:* ${personObj.date}`;
 
-  resultMessage.blocks[1].fields[0].text = `*Categorie:* ${person.division}`;
-  resultMessage.blocks[1].fields[1].text = `*Class:* ${person.weightclasskg}`;
-  resultMessage.blocks[1].fields[2].text = `*Place:* ${person.place}`;
-  resultMessage.blocks[1].fields[3].text = `*Dots:* ${person.dots}`;
+  resultMessage.blocks[1].fields[0].text = `*Categorie:* ${personObj.division}`;
+  resultMessage.blocks[1].fields[1].text = `*Class:* ${personObj.weightclasskg}`;
+  resultMessage.blocks[1].fields[2].text = `*Place:* ${personObj.place}`;
+  resultMessage.blocks[1].fields[3].text = `*Dots:* ${personObj.dots}`;
 
-  resultMessage.blocks[2].fields[0].text = `*Squat:* ${person.best3squatkg}`;
-  resultMessage.blocks[2].fields[1].text = `*Bench:* ${person.best3benchkg}`;
-  resultMessage.blocks[2].fields[2].text = `*Deadlift:* ${person.best3deadliftkg}`;
-  resultMessage.blocks[2].fields[3].text = `*Total:* ${person.totalkg}`;
+  resultMessage.blocks[2].fields[0].text = `*Squat:* ${personObj.best3squatkg}`;
+  resultMessage.blocks[2].fields[1].text = `*Bench:* ${personObj.best3benchkg}`;
+  resultMessage.blocks[2].fields[2].text = `*Deadlift:* ${personObj.best3deadliftkg}`;
+  resultMessage.blocks[2].fields[3].text = `*Total:* ${personObj.totalkg}`;
 
   resultMessage.channel = channel;
   return resultMessage;
+}
+
+async function getLastmeetResult({ channel, person }) {
+  //check user exists and is unique
+  let users = await db_funcs.selectUsers([person]);
+
+  if (users.length > 1) {
+    //TODO: ambiguous users
+    console.log(users);
+    return;
+  }
+
+  if (users.length == 0) {
+    //TODO: no user found
+    console.log("no user found");
+    return;
+  }
+
+  //fetch data from database
+  let { rows } = await db_funcs.selectLastMeet(person);
+
+  //build view
+  let view = getSingleMeetResultView({ personObj: rows[0], channel: channel });
+
+  view.text = `Last meet of *${rows[0].name}*`; //message preview
+  view.blocks[0].text.text = `Last meet of *${rows[0].name}* <https://www.openpowerlifting.org/u/roylotzwik|openpowerlifting.org>`;
+
+  return view;
 }
 
 function getBestmeetResult(channel, person) {
@@ -153,15 +118,77 @@ function getMeetLink(meetname) {
   return "<https://www.openpowerlifting.org/m/bvdk/1938|2019 BVDK BWG KDK Classic>";
 }
 
+//----------------------------------------------------------------
+// Public functions
+//----------------------------------------------------------------
+function getHelpView({ team_id, api_app_id }) {
+  let helpView = slack_views.helpView;
+  helpView.blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `Find more info here: <slack://app?team=${team_id}&id=${api_app_id}&tab=home|App Home>`,
+    },
+  });
+
+  return helpView;
+}
+
+async function getResultMessage({ command, text, channel }) {
+  let view;
+
+  switch (command) {
+    case slack_cons.commandLastmeet:
+      view = await getLastmeetResult({ channel: channel, person: text });
+      break;
+
+    default:
+      break;
+  }
+
+  return view;
+}
+
+function getEntryMessage({ channel, user, thread_ts }) {
+  let view = JSON.parse(JSON.stringify(slack_views.entryMessageView));
+
+  view.channel = channel;
+  view.user = user;
+
+  if (thread_ts) view.thread_ts = thread_ts;
+
+  return view;
+}
+
+function getEntryDialog(subviewName) {
+  let baseView = JSON.parse(JSON.stringify(slack_views.entryDialogView));
+  let subView;
+
+  switch (subviewName) {
+    case "lastmeet":
+      subView = slack_views.lastmeetSubView;
+      break;
+    case "bestmeet":
+      subView = slack_views.bestmeetSubView;
+      break;
+    case "compare":
+      subView = slack_views.compareSubView;
+      break;
+    case "top10":
+      subView = slack_views.top10SubView;
+      break;
+    default:
+      return baseView;
+  }
+
+  baseView.view.blocks = baseView.view.blocks.concat(subView);
+  return baseView;
+}
+
 //exports
 module.exports = {
   getHelpView,
   getResultMessage,
   getEntryDialog,
   getEntryMessage,
-  getLastmeetResult,
-  getBestmeetResult,
-  getCompareResult,
-  getRankingLink,
-  getMeetLink,
 };
