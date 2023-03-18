@@ -3,6 +3,7 @@ const { App } = require("@slack/bolt");
 const db_funcs = require("./helpers/database_functions");
 const slack_funcs = require("./helpers/slack_functions");
 const slack_cons = require("./helpers/slack_constants");
+const { OpenplError } = require("./helpers/errors");
 
 // Create Bolt App
 const app = new App({
@@ -37,17 +38,29 @@ app.command(
 
 app.command(
   `/${slack_cons.commandLastmeet}`,
-  async ({ command, ack, respond }) => {
+  async ({ command, ack, respond, client }) => {
     console.log(`command /${slack_cons.commandLastmeet} started`);
     await ack();
 
-    respond(
-      await slack_funcs.getResultMessage({
-        command: slack_cons.commandLastmeet,
+    await respond(`User lookup started for *${command.text}*`);
+
+    try {
+      await client.chat.postMessage(
+        await slack_funcs.getResultMessage({
+          command: slack_cons.commandLastmeet,
+          channel: command.channel_id,
+          text: command.text,
+        })
+      );
+    } catch (e) {
+      if (!e instanceof OpenplError) return;
+
+      await client.chat.postEphemeral({
         channel: command.channel_id,
-        text: command.text,
-      })
-    );
+        user: command.user_id,
+        text: e.toString(),
+      });
+    }
   }
 );
 

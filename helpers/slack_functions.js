@@ -2,6 +2,7 @@
 const slack_views = require("./slack_views");
 const slack_cons = require("./slack_constants");
 const db_funcs = require("./database_functions");
+const errors = require("./errors");
 
 //----------------------------------------------------------------
 // Private functions
@@ -38,11 +39,7 @@ async function getLastmeetResult({ channel, person }) {
     return;
   }
 
-  if (users.length == 0) {
-    //TODO: no user found
-    console.log("no user found");
-    return;
-  }
+  if (users.length == 0) throw new errors.NoUserFoundError(person);
 
   //fetch data from database
   let { rows } = await db_funcs.selectLastMeet(person);
