@@ -220,30 +220,47 @@ app.action(new RegExp(`.*`), async ({ body, ack }) => {
 });
 
 //******************** View Submissions ********************//
-app.view("entrydialog", async ({ body, ack, client, payload }) => {
+app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
   console.log("View entrydialog submitted");
   await ack();
 
   if (
-    !body.view.state.values.entrydialog_radiobuttons.entrydialog_radiobuttons
-      .selected_option
+    !body.view.state.values[slack_cons.blockEntryDialogRadioButtons][
+      slack_cons.actionEntryDialogRadioButtons
+    ].selected_option
   )
     return; //nothing selected
 
   let option =
-    body.view.state.values.entrydialog_radiobuttons.entrydialog_radiobuttons
-      .selected_option.value;
-  let channel =
-    body.view.state.values.entrydialog_conversations_select
-      .entrydialog_conversations_select.selected_conversation;
+    body.view.state.values[slack_cons.blockEntryDialogRadioButtons][
+      slack_cons.actionEntryDialogRadioButtons
+    ].selected_option.value;
 
-  let retView = slack_funcs.getResultMessage(channel, option);
+  let channel =
+    body.view.state.values[slack_cons.blockEntryDialogConversationSelect][
+      slack_cons.actionEntryDialogConversationSelect
+    ].selected_conversation;
+
+  //get text from options here
+  console.log(body);
 
   try {
-    let result = await client.chat.postMessage(retView);
+    let result = await client.chat.postMessage(
+      await slack_funcs.getResultMessage({
+        command: option,
+        text: "",
+        channel: channel,
+      })
+    );
     console.log(result.ok ? "ok" : "not ok");
-  } catch (error) {
-    console.error(error);
+  } catch (e) {
+    if (!e instanceof OpenplError) return;
+
+    await client.chat.postEphemeral({
+      channel: channel,
+      user: body.user.id,
+      text: e.toString(),
+    });
   }
 });
 

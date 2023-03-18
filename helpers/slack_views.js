@@ -132,7 +132,7 @@ const entryDialogView = {
   trigger_id: "",
   view: {
     type: "modal",
-    callback_id: "entrydialog",
+    callback_id: slack_cons.viewNameEntryDialog,
     submit: {
       type: "plain_text",
       text: "Submit",
@@ -150,14 +150,14 @@ const entryDialogView = {
     blocks: [
       {
         type: "section",
-        block_id: "entrydialog_radiobuttons",
+        block_id: slack_cons.blockEntryDialogRadioButtons,
         text: {
           type: "mrkdwn",
           text: "Please choose the action you want to take",
         },
         accessory: {
           type: "radio_buttons",
-          action_id: "entrydialog_radiobuttons",
+          action_id: slack_cons.actionEntryDialogRadioButtons,
           options: [
             {
               text: {
@@ -203,20 +203,21 @@ const entryDialogView = {
         },
       },
       {
-        type: "section",
-        block_id: "entrydialog_conversations_select",
-        text: {
-          type: "mrkdwn",
+        type: "input",
+        block_id: slack_cons.blockEntryDialogConversationSelect,
+        label: {
+          type: "plain_text",
           text: "And the conversation you want to post to",
+          emoji: true,
         },
-        accessory: {
+        element: {
           type: "conversations_select",
+          action_id: slack_cons.actionEntryDialogConversationSelect,
           placeholder: {
             type: "plain_text",
             text: "Select conversation",
             emoji: true,
           },
-          action_id: "entrydialog_conversations_select",
         },
       },
     ],
