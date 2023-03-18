@@ -17,7 +17,15 @@ function getSingleMeetResultView({ personObj, channel }) {
 
   resultMessage.blocks[1].fields[0].text = `*Categorie:* ${personObj.division}`;
   resultMessage.blocks[1].fields[1].text = `*Class:* ${personObj.weightclasskg}`;
-  resultMessage.blocks[1].fields[2].text = `*Place:* ${personObj.place}`;
+  resultMessage.blocks[1].fields[2].text = `*Place:* ${
+    personObj.place == 1
+      ? "🥇"
+      : personObj.place == 2
+      ? "🥈"
+      : personObj.place == 3
+      ? "🥉"
+      : personObj.place
+  }`;
   resultMessage.blocks[1].fields[3].text = `*Dots:* ${personObj.dots}`;
 
   resultMessage.blocks[2].fields[0].text = `*Squat:* ${personObj.best3squatkg}`;
