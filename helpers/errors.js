@@ -11,7 +11,24 @@ class NoUserFoundError extends OpenplError {
   }
 }
 
+class NoInputError extends OpenplError {
+  constructor(missingInputs) {
+    super();
+    this.missingInputs = missingInputs;
+  }
+
+  toString() {
+    let string = `The following inputs are missing:`;
+    this.missingInputs.forEach(
+      (element, index) =>
+        (string = `${string}${index == 0 ? "" : ","} ${element}`)
+    );
+    return string;
+  }
+}
+
 module.exports = {
   OpenplError,
   NoUserFoundError,
+  NoInputError,
 };
