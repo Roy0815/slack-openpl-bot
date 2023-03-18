@@ -1,5 +1,5 @@
 //file with all frontend data for slack
-const slack_cons = require("./slack_views");
+const slack_cons = require("./slack_constants");
 
 //function names
 //views for multiple reference
