@@ -3,7 +3,7 @@ const { App } = require("@slack/bolt");
 const db_funcs = require("./helpers/database_functions");
 const slack_funcs = require("./helpers/slack_functions");
 const slack_cons = require("./helpers/slack_constants");
-const { OpenplError } = require("./helpers/errors");
+const { OpenplError, ViewSubmissionError } = require("./helpers/errors");
 
 // Create Bolt App
 const app = new App({
@@ -42,7 +42,7 @@ app.command(
     console.log(`command /${slack_cons.commandLastmeet} started`);
     await ack();
 
-    await respond(`User lookup started for *${command.text}*`);
+    await respond(slack_cons.messagePendingResult);
 
     try {
       await client.chat.postMessage(
@@ -227,40 +227,42 @@ app.action(new RegExp(`.*`), async ({ body, ack }) => {
 //******************** View Submissions ********************//
 app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
   console.log("View entrydialog submitted");
+  let infoObj;
+
+  try {
+    infoObj = slack_funcs.getDetailsFromDialog(body);
+  } catch (e) {
+    if (!e instanceof ViewSubmissionError) {
+      throw e;
+    }
+    await ack(e.toSlackResponseObject());
+    return;
+  }
+
   await ack();
-
-  if (
-    !body.view.state.values[slack_cons.blockEntryDialogRadioButtons][
-      slack_cons.actionEntryDialogRadioButtons
-    ].selected_option
-  )
-    return; //nothing selected
-
-  let option =
-    body.view.state.values[slack_cons.blockEntryDialogRadioButtons][
-      slack_cons.actionEntryDialogRadioButtons
-    ].selected_option.value;
 
   let channel =
     body.view.state.values[slack_cons.blockEntryDialogConversationSelect][
       slack_cons.actionEntryDialogConversationSelect
     ].selected_conversation;
 
-  //get text from options here
-  console.log(body);
-
   try {
-    let result = await client.chat.postMessage(
-      await slack_funcs.getResultMessage({
-        command: option,
-        text: "",
-        channel: channel,
-      })
-    );
-    console.log(result.ok ? "ok" : "not ok");
-  } catch (e) {
-    if (!e instanceof OpenplError) return;
+    //pending message
+    await client.chat.postEphemeral({
+      channel: channel,
+      user: body.user.id,
+      text: slack_cons.messagePendingResult,
+    });
 
+    //result message
+    await client.chat.postMessage(await slack_funcs.getResultMessage(infoObj));
+  } catch (e) {
+    //error on server
+    if (!e instanceof OpenplError) {
+      throw e;
+    }
+
+    //error to user
     await client.chat.postEphemeral({
       channel: channel,
       user: body.user.id,

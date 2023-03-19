@@ -1,6 +1,6 @@
 class OpenplError extends Error {}
 
-class NoUserFoundError extends OpenplError {
+class NoLifterFoundError extends OpenplError {
   constructor(name) {
     super();
     this.message = `No data found for user *${name}*`;
@@ -8,6 +8,21 @@ class NoUserFoundError extends OpenplError {
 
   toString() {
     return this.message;
+  }
+}
+
+class AmbiguousLifterError extends OpenplError {
+  constructor(userArray) {
+    super();
+    this.users = userArray;
+  }
+
+  getLifters() {
+    return this.users;
+  }
+
+  toString() {
+    return "Ambiguous lifter name";
   }
 }
 
@@ -27,8 +42,26 @@ class NoInputError extends OpenplError {
   }
 }
 
+class ViewSubmissionError extends OpenplError {
+  constructor({ block, message }) {
+    super();
+    [this.block, this.message] = [block, message];
+  }
+
+  toSlackResponseObject() {
+    return {
+      response_action: "errors",
+      errors: {
+        [this.block]: `${this.message}`,
+      },
+    };
+  }
+}
+
 module.exports = {
   OpenplError,
-  NoUserFoundError,
+  NoLifterFoundError,
+  AmbiguousLifterError,
   NoInputError,
+  ViewSubmissionError,
 };

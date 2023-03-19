@@ -224,9 +224,10 @@ const lastmeetSubView = [
   },
   {
     type: "input",
+    block_id: slack_cons.blockLastMeetSubViewPersonInput,
     element: {
       type: "plain_text_input",
-      action_id: "lastmeet_person_input",
+      action_id: slack_cons.actionLastMeetSubViewPersonInput,
       placeholder: {
         type: "plain_text",
         text: "Firstname Lastname [#]",

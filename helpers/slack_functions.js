@@ -44,13 +44,9 @@ async function getLastmeetResult({ channel, person }) {
   //check user exists and is unique
   let users = await db_funcs.selectUsers([person]);
 
-  if (users.length > 1) {
-    //TODO: ambiguous users
-    console.log(users);
-    return;
-  }
+  if (users.length > 1) throw new errors.AmbiguousLifterError(users);
 
-  if (users.length == 0) throw new errors.NoUserFoundError(person);
+  if (users.length == 0) throw new errors.NoLifterFoundError(person);
 
   //fetch data from database
   let { rows } = await db_funcs.selectLastMeet(person);
@@ -126,6 +122,27 @@ function getMeetLink(meetname) {
   return "<https://www.openpowerlifting.org/m/bvdk/1938|2019 BVDK BWG KDK Classic>";
 }
 
+function getCommandTextFromDialog({ command, values }) {
+  let text;
+  switch (command) {
+    case slack_cons.commandLastmeet:
+      text =
+        values[slack_cons.blockLastMeetSubViewPersonInput][
+          slack_cons.actionLastMeetSubViewPersonInput
+        ].value;
+
+      if (!slack_cons.regexLifterNameValidation.test(text))
+        throw new errors.ViewSubmissionError({
+          block: slack_cons.blockLastMeetSubViewPersonInput,
+          message: slack_cons.messageLifterNameNotValid,
+        });
+
+      break;
+  }
+
+  return text;
+}
+
 //----------------------------------------------------------------
 // Public functions
 //----------------------------------------------------------------
@@ -142,10 +159,32 @@ function getHelpView({ team_id, api_app_id }) {
   return helpView;
 }
 
-async function getResultMessage({ command, text, channel }) {
+function getDetailsFromDialog({
+  view: {
+    state: { values },
+  },
+}) {
+  let command =
+    values[slack_cons.blockEntryDialogRadioButtons][
+      slack_cons.actionEntryDialogRadioButtons
+    ].selected_option.value;
+
+  let channel =
+    values[slack_cons.blockEntryDialogConversationSelect][
+      slack_cons.actionEntryDialogConversationSelect
+    ].selected_conversation;
+
+  return {
+    option: command,
+    channel: channel,
+    text: getCommandTextFromDialog({ command, values }),
+  };
+}
+
+async function getResultMessage({ option, text, channel }) {
   let view;
 
-  switch (command) {
+  switch (option) {
     case slack_cons.commandLastmeet:
       view = await getLastmeetResult({ channel: channel, person: text });
       break;
@@ -196,6 +235,7 @@ function getEntryDialog(subviewName) {
 //exports
 module.exports = {
   getHelpView,
+  getDetailsFromDialog,
   getResultMessage,
   getEntryDialog,
   getEntryMessage,
