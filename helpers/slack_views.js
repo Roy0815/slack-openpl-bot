@@ -4,6 +4,38 @@ const slack_cons = require("./slack_constants");
 //----------------------------------------------------------------
 // Home view
 //----------------------------------------------------------------
+//help subview used for homeview and help message
+const helpSubView = [
+  {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: "You can start actions in the following ways:",
+    },
+  },
+  {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `*1️⃣ Use the \`/${slack_cons.commandDialog}\` command.* Type \`/${slack_cons.commandDialog}\` to start a dialog where you can interactively select the information you want to display. In the conversation select you have to specify the channel where I will post the result.`,
+    },
+  },
+  {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `*2️⃣ Use the other \`/\` commands.* For each action there is also a _shortcut_ \`/\` command with a specific set of options. Using those commands won't open a dialog. All commands and options are listed below:\n\`/${slack_cons.commandLastmeet} [name]\`\nreturns the last meet of the person\n\n\`/${slack_cons.commandBestmeet} [name]; [criteria]\`\nreturns the best meet of the person by criteria\n\n\`/${slack_cons.commandCompare} [names]; [criteria]; [lift]\`\ncompares two or more lifters by criteria and lift\n\n\`/${slack_cons.commandMeetlink} [meetname]\`\nreturns the link to the meet\n\n\`/${slack_cons.commandRanking} [filter]\`\nreturns the link to openpowerlifting.org with the specified filters applied`,
+    },
+  },
+  {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: "*3️⃣ Mention the bot in a channel or thread `@Openpowerlifting Bot`.* You can use this method as kind of a shortcut too, but more important: this is the only way you can get the results into a thread.\nUse it as follows: `@Openpowerlifting Bot [command]; [options]`\n",
+    },
+  },
+];
+
 const homeView = {
   user_id: "", // Use the user ID associated with the event
   view: {
@@ -45,38 +77,6 @@ const homeView = {
     ],
   },
 };
-
-//help subview used for homeview and help message
-const helpSubView = [
-  {
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: "You can start actions in the following ways:",
-    },
-  },
-  {
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: `*1️⃣ Use the \`/${slack_cons.commandDialog}\` command.* Type \`/${slack_cons.commandDialog}\` to start a dialog where you can interactively select the information you want to display. In the conversation select you have to specify the channel where I will post the result.`,
-    },
-  },
-  {
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: `*2️⃣ Use the other \`/\` commands.* For each action there is also a _shortcut_ \`/\` command with a specific set of options. Using those commands won't open a dialog. All commands and options are listed below:\n\`/${slack_cons.commandLastmeet} [name]\`\nreturns the last meet of the person\n\n\`/${slack_cons.commandBestmeet} [name]; [criteria]\`\nreturns the best meet of the person by criteria\n\n\`/${slack_cons.commandCompare} [names]; [criteria]; [lift]\`\ncompares two or more lifters by criteria and lift\n\n\`/${slack_cons.commandMeetlink} [meetname]\`\nreturns the link to the meet\n\n\`/${slack_cons.commandRanking} [filter]\`\nreturns the link to openpowerlifting.org with the specified filters applied`,
-    },
-  },
-  {
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: "*3️⃣ Mention the bot in a channel or thread `@Openpowerlifting Bot`.* You can use this method as kind of a shortcut too, but more important: this is the only way you can get the results into a thread.\nUse it as follows: `@Openpowerlifting Bot [command]; [options]`\n",
-    },
-  },
-];
 
 const helpView = {
   blocks: [helpSubView[0], helpSubView[1], helpSubView[2], helpSubView[3]],
@@ -149,13 +149,14 @@ const entryDialogView = {
     },
     blocks: [
       {
-        type: "section",
+        type: "input",
         block_id: slack_cons.blockEntryDialogRadioButtons,
-        text: {
-          type: "mrkdwn",
+        dispatch_action: true,
+        label: {
+          type: "plain_text",
           text: "Please choose the action you want to take",
         },
-        accessory: {
+        element: {
           type: "radio_buttons",
           action_id: slack_cons.actionEntryDialogRadioButtons,
           options: [
@@ -163,7 +164,6 @@ const entryDialogView = {
               text: {
                 type: "plain_text",
                 text: "Last Meet",
-                emoji: true,
               },
               value: slack_cons.commandLastmeet,
             },
@@ -171,7 +171,6 @@ const entryDialogView = {
               text: {
                 type: "plain_text",
                 text: "Best Meet",
-                emoji: true,
               },
               value: slack_cons.commandBestmeet,
             },
@@ -179,7 +178,6 @@ const entryDialogView = {
               text: {
                 type: "plain_text",
                 text: "Compare",
-                emoji: true,
               },
               value: slack_cons.commandCompare,
             },
@@ -187,7 +185,6 @@ const entryDialogView = {
               text: {
                 type: "plain_text",
                 text: "Meet Link",
-                emoji: true,
               },
               value: slack_cons.commandMeetlink,
             },
@@ -195,7 +192,6 @@ const entryDialogView = {
               text: {
                 type: "plain_text",
                 text: "Ranking by criteria",
-                emoji: true,
               },
               value: slack_cons.commandRanking,
             },
@@ -208,7 +204,6 @@ const entryDialogView = {
         label: {
           type: "plain_text",
           text: "And the conversation you want to post to",
-          emoji: true,
         },
         element: {
           type: "conversations_select",
@@ -216,7 +211,6 @@ const entryDialogView = {
           placeholder: {
             type: "plain_text",
             text: "Select conversation",
-            emoji: true,
           },
         },
       },

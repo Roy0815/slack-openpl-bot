@@ -196,19 +196,24 @@ app.action("entrymessage_cancel", async ({ respond, ack }) => {
   }
 });
 
-app.action("entrydialog_radiobuttons", async ({ ack, body, client }) => {
-  console.log("action entrydialog_radiobuttons started");
-  await ack();
-  let view = slack_funcs.getEntryDialog(body.actions[0].selected_option.value);
-  view.view_id = body.view.id;
+app.action(
+  slack_cons.actionEntryDialogRadioButtons,
+  async ({ ack, body, client }) => {
+    console.log("action entrydialog_radiobuttons started");
+    await ack();
+    let view = slack_funcs.getEntryDialog(
+      body.actions[0].selected_option.value
+    );
+    view.view_id = body.view.id;
 
-  try {
-    let result = await client.views.update(view);
-    console.log(result.ok ? "ok" : "not ok");
-  } catch (error) {
-    console.error(error);
+    try {
+      let result = await client.views.update(view);
+      console.log(result.ok ? "ok" : "not ok");
+    } catch (error) {
+      console.error(error);
+    }
   }
-});
+);
 
 // handle remaining actions
 app.action(new RegExp(`.*`), async ({ body, ack }) => {
