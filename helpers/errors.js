@@ -3,27 +3,27 @@ class OpenplError extends Error {}
 class NoUserFoundError extends OpenplError {
   constructor(name) {
     super();
-    this.name = name;
+    this.message = `No data found for user *${name}*`;
   }
 
   toString() {
-    return `No data found for user *${this.name}*`;
+    return this.message;
   }
 }
 
 class NoInputError extends OpenplError {
   constructor(missingInputs) {
     super();
-    this.missingInputs = missingInputs;
+    this.message = `The following inputs are missing:`;
+
+    missingInputs.forEach(
+      (element, index) =>
+        (this.message += `${index == 0 ? "" : ","} ${element}`)
+    );
   }
 
   toString() {
-    let string = `The following inputs are missing:`;
-    this.missingInputs.forEach(
-      (element, index) =>
-        (string = `${string}${index == 0 ? "" : ","} ${element}`)
-    );
-    return string;
+    return this.message;
   }
 }
 
