@@ -16,22 +16,15 @@ const app = new App({
 app.command(
   `/${slack_cons.commandDialog}`,
   async ({ command, ack, client, respond }) => {
-    console.log(`command /${slack_cons.commandDialog} started`);
     await ack();
 
-    try {
-      if (command.text.includes("help")) {
-        let result = await respond(slack_funcs.getHelpView(command));
-        console.log(result.statusText);
-      } else {
-        let view = slack_funcs.getEntryDialog();
-        view.trigger_id = command.trigger_id;
+    if (command.text.includes("help")) {
+      await respond(slack_funcs.getHelpView(command));
+    } else {
+      let view = slack_funcs.getEntryDialog();
+      view.trigger_id = command.trigger_id;
 
-        let result = await client.views.open(view);
-        console.log(result.ok ? "ok" : "not ok");
-      }
-    } catch (error) {
-      console.log(error);
+      await client.views.open(view);
     }
   }
 );
@@ -39,7 +32,6 @@ app.command(
 app.command(
   `/${slack_cons.commandLastmeet}`,
   async ({ command, ack, respond, client }) => {
-    console.log(`command /${slack_cons.commandLastmeet} started`);
     await ack();
 
     try {
@@ -79,7 +71,6 @@ app.command(
 app.command(
   `/${slack_cons.commandBestmeet}`,
   async ({ command, ack, respond }) => {
-    console.log(`command /${slack_cons.commandBestmeet} started`);
     await ack();
 
     let retView = slack_funcs.getResultMessage(
@@ -88,74 +79,51 @@ app.command(
     );
     retView.response_type = "in_channel";
 
-    try {
-      let result = await respond(retView);
-      console.log(result.statusText);
-    } catch (error) {
-      console.log(error);
-    }
+    await respond(retView);
   }
 );
 
 app.command(
   `/${slack_cons.commandCompare}`,
   async ({ command, ack, respond }) => {
-    console.log(`command /${slack_cons.commandCompare} started`);
     await ack();
 
     let retView = await slack_funcs.getCompareResult(command);
     retView.response_type = "in_channel";
 
-    try {
-      let result = await respond(retView);
-      console.log(result.statusText);
-    } catch (error) {
-      console.log(error);
-    }
+    await respond(retView);
   }
 );
 
 app.command(
   `/${slack_cons.commandMeetlink}`,
   async ({ command, ack, respond }) => {
-    console.log(`command /${slack_cons.commandMeetlink} started`);
     await ack();
 
-    try {
-      let result = await respond({
-        text: `Here is the link to the meet that <@${
-          command.user_id
-        }> requested: ${slack_funcs.getMeetLink()}`,
-        response_type: "in_channel",
-      });
-      console.log(result.statusText);
-    } catch (error) {
-      console.log(error);
-    }
+    await respond({
+      text: `Here is the link to the meet that <@${
+        command.user_id
+      }> requested: ${slack_funcs.getMeetLink()}`,
+      response_type: "in_channel",
+    });
   }
 );
 
 app.command(
   `/${slack_cons.commandRanking}`,
   async ({ command, ack, respond }) => {
-    console.log(`command /${slack_cons.commandRanking} started`);
     await ack();
 
-    try {
-      // prettier-ignore
-      let result = await respond({
-                text: `Here is the link to the ranking that <@${command.user_id}> requested: ${slack_funcs.getRankingLink()}`,
-                response_type: 'in_channel'
-            })
-      console.log(result.statusText);
-    } catch (error) {
-      console.log(error);
-    }
+    await respond({
+      text: `Here is the link to the ranking that <@${
+        command.user_id
+      }> requested: ${slack_funcs.getRankingLink()}`,
+      response_type: "in_channel",
+    });
   }
 );
 
 app.command("/update_database", async ({ ack, respond }) => {
-  console.log("/update_database");
   await ack();
 
   db_funcs.startUpdateDatabase();
@@ -164,7 +132,6 @@ app.command("/update_database", async ({ ack, respond }) => {
 });
 
 app.command("/helloworld", async ({ command, ack, client, respond }) => {
-  console.log("/helloworld started");
   await ack();
 
   let users = await db_funcs.selectUsers([command.text]);
@@ -182,48 +149,31 @@ app.command("/helloworld", async ({ command, ack, client, respond }) => {
 
 //******************** Actions ********************//
 app.action("entrymessage_start", async ({ body, client, ack }) => {
-  console.log("action entrymessage_start started");
   await ack();
   let view = slack_funcs.getEntryDialog();
   view.trigger_id = body.trigger_id;
 
-  try {
-    let result = await client.views.open(view);
-    console.log(result.ok ? "ok" : "not ok");
-  } catch (error) {
-    console.error(error);
-  }
+  await client.views.open(view);
 });
 
 app.action("entrymessage_cancel", async ({ respond, ack }) => {
-  console.log("Action entrymessage_cancel started");
   await ack();
 
-  try {
-    await respond({
-      delete_original: true,
-    });
-  } catch (error) {
-    console.log(error);
-  }
+  await respond({
+    delete_original: true,
+  });
 });
 
 app.action(
   slack_cons.actionEntryDialogRadioButtons,
   async ({ ack, body, client }) => {
-    console.log("action entrydialog_radiobuttons started");
     await ack();
     let view = slack_funcs.getEntryDialog(
       body.actions[0].selected_option.value
     );
     view.view_id = body.view.id;
 
-    try {
-      let result = await client.views.update(view);
-      console.log(result.ok ? "ok" : "not ok");
-    } catch (error) {
-      console.error(error);
-    }
+    await client.views.update(view);
   }
 );
 
@@ -231,14 +181,11 @@ app.action(
 app.action(new RegExp(`.*`), async ({ body, ack }) => {
   try {
     await ack();
-    if (body && body.actions && body.actions.length > 0)
-      console.log(`Action: ${body.actions[0].action_id}`);
   } catch (err) {} //ReceiverMultipleAckError
 });
 
 //******************** View Submissions ********************//
 app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
-  console.log("View entrydialog submitted");
   let infoObj;
 
   try {
@@ -285,29 +232,28 @@ app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
 
 //******************** Events ********************//
 app.event("app_home_opened", async ({ event, client }) => {
-  console.log("event app_home_opened started");
-
   let view = slack_funcs.homeView;
   view.user_id = event.user;
 
-  try {
-    let result = await client.views.publish(view);
-    console.log(result.ok ? "ok" : "not ok");
-  } catch (error) {
-    console.error(error);
-  }
+  await client.views.publish(view);
 });
 
 app.event("app_mention", async ({ event, client }) => {
-  console.log("event app_mention started");
-  try {
-    let result = await client.chat.postEphemeral(
-      slack_funcs.getEntryMessage(event)
-    );
-    console.log(result.ok ? "ok" : "not ok");
-  } catch (error) {
-    console.log(error);
+  await client.chat.postEphemeral(slack_funcs.getEntryMessage(event));
+});
+
+//******************** Errors ********************//
+app.error(async ({ error, context, body }) => {
+  //catch server reponse time: notify user
+  if (body.command && error.data.error == "expired_trigger_id") {
+    await client.chat.postMessage({
+      channel: body.user_id,
+      text: `Deine Aktion ${body.command} konnte leider vom Server nicht rechtzeitig verarbeitet werden. Bitte versuche es einfach nochmal. Sorry für die Umstände!`,
+    });
   }
+
+  //log error
+  console.log(error);
 });
 
 //start the app

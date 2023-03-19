@@ -38,7 +38,6 @@ function getSingleMeetResultView({ personObj, channel }) {
 }
 
 async function getLastmeetResult({ channel, person }) {
-  console.log(person);
   if (!person || person == "") throw new errors.NoInputError(["person name"]);
 
   //check user exists and is unique
