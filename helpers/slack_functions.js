@@ -130,15 +130,10 @@ function getCommandTextFromDialog({ command, values }) {
         values[slack_cons.blockLastMeetSubViewPersonInput][
           slack_cons.actionLastMeetSubViewPersonInput
         ].value;
-
-      if (!slack_cons.regexLifterNameValidation.test(text))
-        throw new errors.ViewSubmissionError({
-          block: slack_cons.blockLastMeetSubViewPersonInput,
-          message: slack_cons.messageLifterNameNotValid,
-        });
-
       break;
   }
+
+  validateTextForCommand({ command, text });
 
   return text;
 }
@@ -175,18 +170,18 @@ function getDetailsFromDialog({
     ].selected_conversation;
 
   return {
-    option: command,
-    channel: channel,
+    command,
+    channel,
     text: getCommandTextFromDialog({ command, values }),
   };
 }
 
-async function getResultMessage({ option, text, channel }) {
+async function getResultMessage({ command, text, channel }) {
   let view;
 
-  switch (option) {
+  switch (command) {
     case slack_cons.commandLastmeet:
-      view = await getLastmeetResult({ channel: channel, person: text });
+      view = await getLastmeetResult({ channel, person: text });
       break;
 
     default:
@@ -232,6 +227,18 @@ function getEntryDialog(subviewName) {
   return baseView;
 }
 
+function validateTextForCommand({ command, text }) {
+  switch (command) {
+    case slack_cons.commandLastmeet:
+      if (!slack_cons.regexLifterNameValidation.test(text))
+        throw new errors.CommandSubmissionError({
+          block: slack_cons.blockLastMeetSubViewPersonInput,
+          message: slack_cons.messageLifterNameNotValid,
+        });
+      break;
+  }
+}
+
 //exports
 module.exports = {
   getHelpView,
@@ -239,4 +246,5 @@ module.exports = {
   getResultMessage,
   getEntryDialog,
   getEntryMessage,
+  validateTextForCommand,
 };

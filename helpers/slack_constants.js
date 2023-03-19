@@ -25,9 +25,9 @@ module.exports = {
   lift: ["squat", "bench", "deadlift", "total"],
 
   //regex validations
-  regexLifterNameValidation: new RegExp(/^[A-Za-zÀ-ÖØ-öø-ÿ0-9 ]*$/),
+  regexLifterNameValidation: new RegExp(/^[A-Za-zÀ-ÖØ-öø-ÿ0-9 #]*$/),
 
   //messages
-  messageLifterNameNotValid: `Please only use letters, spaces and numbers for the lifters name`,
+  messageLifterNameNotValid: `Please only use letters, spaces and numbers (e.g. #1) for the lifters name`,
   messagePendingResult: `Fetching data from database...`,
 };

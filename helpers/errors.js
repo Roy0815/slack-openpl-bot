@@ -42,13 +42,17 @@ class NoInputError extends OpenplError {
   }
 }
 
-class ViewSubmissionError extends OpenplError {
+class CommandSubmissionError extends OpenplError {
   constructor({ block, message }) {
     super();
     [this.block, this.message] = [block, message];
   }
 
-  toSlackResponseObject() {
+  toString() {
+    return this.message;
+  }
+
+  toViewResponseObject() {
     return {
       response_action: "errors",
       errors: {
@@ -63,5 +67,5 @@ module.exports = {
   NoLifterFoundError,
   AmbiguousLifterError,
   NoInputError,
-  ViewSubmissionError,
+  CommandSubmissionError,
 };

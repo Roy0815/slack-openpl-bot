@@ -3,7 +3,7 @@ const { App } = require("@slack/bolt");
 const db_funcs = require("./helpers/database_functions");
 const slack_funcs = require("./helpers/slack_functions");
 const slack_cons = require("./helpers/slack_constants");
-const { OpenplError, ViewSubmissionError } = require("./helpers/errors");
+const { OpenplError, CommandSubmissionError } = require("./helpers/errors");
 
 // Create Bolt App
 const app = new App({
@@ -42,7 +42,19 @@ app.command(
     console.log(`command /${slack_cons.commandLastmeet} started`);
     await ack();
 
-    await respond(slack_cons.messagePendingResult);
+    try {
+      slack_funcs.validateTextForCommand({
+        command: slack_cons.commandLastmeet,
+        text: command.text,
+      });
+      await respond(slack_cons.messagePendingResult);
+    } catch (e) {
+      if (!e instanceof CommandSubmissionError) {
+        throw e;
+      }
+      await respond(e.toString());
+      return;
+    }
 
     try {
       await client.chat.postMessage(
@@ -53,7 +65,7 @@ app.command(
         })
       );
     } catch (e) {
-      if (!e instanceof OpenplError) return;
+      if (!e instanceof OpenplError) throw e;
 
       await client.chat.postEphemeral({
         channel: command.channel_id,
@@ -232,7 +244,7 @@ app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
   try {
     infoObj = slack_funcs.getDetailsFromDialog(body);
   } catch (e) {
-    if (!e instanceof ViewSubmissionError) {
+    if (!e instanceof CommandSubmissionError) {
       throw e;
     }
     await ack(e.toSlackResponseObject());
