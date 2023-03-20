@@ -12,12 +12,12 @@ function getSingleMeetResultView({ personObj, channel }) {
     JSON.stringify(slack_views.singlemeetResultMessageView)
   );
 
-  resultMessage.blocks[0].fields[0].text = `*Meet:* ${personObj.meetname}`;
-  resultMessage.blocks[0].fields[1].text = `*Date:* ${personObj.date}`;
+  resultMessage.blocks[2].fields[0].text = `*Meet:* ${personObj.meetname}`;
+  resultMessage.blocks[2].fields[1].text = `*Date:* ${personObj.date}`;
 
-  resultMessage.blocks[1].fields[0].text = `*Categorie:* ${personObj.division}`;
-  resultMessage.blocks[1].fields[1].text = `*Class:* ${personObj.weightclasskg}`;
-  resultMessage.blocks[1].fields[2].text = `*Place:* ${
+  resultMessage.blocks[3].fields[0].text = `*Categorie:* ${personObj.division}`;
+  resultMessage.blocks[3].fields[1].text = `*Class:* ${personObj.weightclasskg}`;
+  resultMessage.blocks[3].fields[2].text = `*Place:* ${
     personObj.place == 1
       ? "🥇"
       : personObj.place == 2
@@ -26,12 +26,12 @@ function getSingleMeetResultView({ personObj, channel }) {
       ? "🥉"
       : personObj.place
   }`;
-  resultMessage.blocks[1].fields[3].text = `*Dots:* ${personObj.dots}`;
+  resultMessage.blocks[3].fields[3].text = `*Dots:* ${personObj.dots}`;
 
-  resultMessage.blocks[2].fields[0].text = `*Squat:* ${personObj.best3squatkg}`;
-  resultMessage.blocks[2].fields[1].text = `*Bench:* ${personObj.best3benchkg}`;
-  resultMessage.blocks[2].fields[2].text = `*Deadlift:* ${personObj.best3deadliftkg}`;
-  resultMessage.blocks[2].fields[3].text = `*Total:* ${personObj.totalkg}`;
+  resultMessage.blocks[4].fields[0].text = `*Squat:* ${personObj.best3squatkg}`;
+  resultMessage.blocks[4].fields[1].text = `*Bench:* ${personObj.best3benchkg}`;
+  resultMessage.blocks[4].fields[2].text = `*Deadlift:* ${personObj.best3deadliftkg}`;
+  resultMessage.blocks[4].fields[3].text = `*Total:* ${personObj.totalkg}`;
 
   resultMessage.channel = channel;
   return resultMessage;

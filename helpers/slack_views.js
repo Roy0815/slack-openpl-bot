@@ -488,8 +488,14 @@ const singlemeetResultMessageView = {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: "",
+        text: "", // set in the method
       },
+    },
+    {
+      type: "divider",
+    },
+    {
+      type: "section",
       fields: [
         {
           type: "mrkdwn",
@@ -542,6 +548,9 @@ const singlemeetResultMessageView = {
           text: "*Total:* 675 kg",
         },
       ],
+    },
+    {
+      type: "divider",
     },
   ],
 };
