@@ -132,7 +132,7 @@ app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
     if (!e instanceof CommandSubmissionError) {
       throw e;
     }
-    await ack(e.toSlackResponseObject());
+    await ack(e.toViewResponseObject());
     return;
   }
 

@@ -126,8 +126,8 @@ function getCommandTextFromDialog({ command, values }) {
   switch (command) {
     case slack_cons.commandLastmeet:
       text =
-        values[slack_cons.blockLastMeetSubViewPersonInput][
-          slack_cons.actionLastMeetSubViewPersonInput
+        values[slack_cons.blockPerson1InputSubView][
+          slack_cons.actionPerson1InputSubView
         ].value;
       break;
   }
@@ -183,6 +183,10 @@ async function getResultMessage({ command, text, channel }) {
       view = await getLastmeetResult({ channel, person: text });
       break;
 
+    case slack_cons.commandBestmeet:
+      view = await getBestmeetResult({ channel, person: text });
+      break;
+
     default:
       break;
   }
@@ -206,17 +210,20 @@ function getEntryDialog(subviewName) {
   let subView;
 
   switch (subviewName) {
-    case "lastmeet":
+    case slack_cons.commandLastmeet:
       subView = slack_views.lastmeetSubView;
       break;
-    case "bestmeet":
+    case slack_cons.commandBestmeet:
       subView = slack_views.bestmeetSubView;
       break;
-    case "compare":
+    case slack_cons.commandCompare:
       subView = slack_views.compareSubView;
       break;
-    case "top10":
-      subView = slack_views.top10SubView;
+    case slack_cons.commandMeetlink:
+      subView = slack_views.meetLinkSubView;
+      break;
+    case slack_cons.commandRanking:
+      subView = slack_views.rankingSubView;
       break;
     default:
       return baseView;
@@ -231,7 +238,14 @@ function validateTextForCommand({ command, text }) {
     case slack_cons.commandLastmeet:
       if (!slack_cons.regexLifterNameValidation.test(text))
         throw new errors.CommandSubmissionError({
-          block: slack_cons.blockLastMeetSubViewPersonInput,
+          block: slack_cons.blockPerson1InputSubView,
+          message: slack_cons.messageLifterNameNotValid,
+        });
+      break;
+    case slack_cons.commandBestmeet:
+      if (!slack_cons.regexLifterNameValidation.test(text))
+        throw new errors.CommandSubmissionError({
+          block: slack_cons.blockPerson1InputSubView,
           message: slack_cons.messageLifterNameNotValid,
         });
       break;

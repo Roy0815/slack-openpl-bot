@@ -218,184 +218,118 @@ const entryDialogView = {
   },
 };
 
+const person1SelectBlock = {
+  type: "input",
+  block_id: slack_cons.blockPerson1InputSubView,
+  element: {
+    type: "plain_text_input",
+    action_id: slack_cons.actionPerson1InputSubView,
+    placeholder: {
+      type: "plain_text",
+      text: "Firstname Lastname [#]",
+      emoji: true,
+    },
+  },
+  label: {
+    type: "plain_text",
+    text: "Person",
+    emoji: true,
+  },
+};
+
+const person2SelectBlock = {
+  type: "input",
+  block_id: slack_cons.blockPerson2InputSubView,
+  element: {
+    type: "plain_text_input",
+    action_id: slack_cons.actionPerson2InputSubView,
+    placeholder: {
+      type: "plain_text",
+      text: "Firstname Lastname [#]",
+      emoji: true,
+    },
+  },
+  label: {
+    type: "plain_text",
+    text: "Person",
+    emoji: true,
+  },
+};
+
+const criteriaSelectBlock = {
+  type: "section",
+  block_id: slack_cons.blockCriteriaInputSubView,
+  text: {
+    type: "mrkdwn",
+    text: "By criteria",
+  },
+  accessory: {
+    type: "static_select",
+    action_id: slack_cons.actionCriteriaInputSubView,
+    initial_option: {
+      text: {
+        type: "plain_text",
+        text: "Dots",
+        emoji: true,
+      },
+      value: "dots",
+    },
+    options: [
+      {
+        text: {
+          type: "plain_text",
+          text: "Absolute",
+          emoji: true,
+        },
+        value: "absolute",
+      },
+      {
+        text: {
+          type: "plain_text",
+          text: "Wilks",
+          emoji: true,
+        },
+        value: "wilks",
+      },
+      {
+        text: {
+          type: "plain_text",
+          text: "Dots",
+          emoji: true,
+        },
+        value: "dots",
+      },
+    ],
+  },
+};
+
 const lastmeetSubView = [
   {
     type: "divider",
   },
-  {
-    type: "input",
-    block_id: slack_cons.blockLastMeetSubViewPersonInput,
-    element: {
-      type: "plain_text_input",
-      action_id: slack_cons.actionLastMeetSubViewPersonInput,
-      placeholder: {
-        type: "plain_text",
-        text: "Firstname Lastname [#]",
-        emoji: true,
-      },
-    },
-    label: {
-      type: "plain_text",
-      text: "Person",
-      emoji: true,
-    },
-  },
+  person1SelectBlock,
 ];
 
 const bestmeetSubView = [
   {
     type: "divider",
   },
-  {
-    type: "input",
-    element: {
-      type: "plain_text_input",
-      action_id: "bestmeet_person_input",
-      placeholder: {
-        type: "plain_text",
-        text: "Firstname Lastname [#]",
-        emoji: true,
-      },
-    },
-    label: {
-      type: "plain_text",
-      text: "Person",
-      emoji: true,
-    },
-  },
-  {
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: "By criteria",
-    },
-    accessory: {
-      type: "static_select",
-      action_id: "bestmeet_criteria_input",
-      initial_option: {
-        text: {
-          type: "plain_text",
-          text: "Dots",
-          emoji: true,
-        },
-        value: "dots",
-      },
-      options: [
-        {
-          text: {
-            type: "plain_text",
-            text: "Total",
-            emoji: true,
-          },
-          value: "total",
-        },
-        {
-          text: {
-            type: "plain_text",
-            text: "Wilks",
-            emoji: true,
-          },
-          value: "wilks",
-        },
-        {
-          text: {
-            type: "plain_text",
-            text: "Dots",
-            emoji: true,
-          },
-          value: "dots",
-        },
-      ],
-    },
-  },
+  person1SelectBlock,
+  criteriaSelectBlock,
 ];
 
 const compareSubView = [
   {
     type: "divider",
   },
-  {
-    type: "input",
-    element: {
-      type: "plain_text_input",
-      action_id: "compare_person1_input",
-      placeholder: {
-        type: "plain_text",
-        text: "Firstname Lastname [#]",
-        emoji: true,
-      },
-    },
-    label: {
-      type: "plain_text",
-      text: "Person 1",
-      emoji: true,
-    },
-  },
-  {
-    type: "input",
-    element: {
-      type: "plain_text_input",
-      action_id: "compare_person2_input",
-      placeholder: {
-        type: "plain_text",
-        text: "Firstname Lastname [#]",
-        emoji: true,
-      },
-    },
-    label: {
-      type: "plain_text",
-      text: "Person 2",
-      emoji: true,
-    },
-  },
-  {
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: "By criteria",
-    },
-    accessory: {
-      type: "static_select",
-      action_id: "compare_criteria_input",
-      initial_option: {
-        text: {
-          type: "plain_text",
-          text: "Dots",
-          emoji: true,
-        },
-        value: "dots",
-      },
-      options: [
-        {
-          text: {
-            type: "plain_text",
-            text: "Total",
-            emoji: true,
-          },
-          value: "total",
-        },
-        {
-          text: {
-            type: "plain_text",
-            text: "Wilks",
-            emoji: true,
-          },
-          value: "wilks",
-        },
-        {
-          text: {
-            type: "plain_text",
-            text: "Dots",
-            emoji: true,
-          },
-          value: "dots",
-        },
-      ],
-    },
-  },
+  person1SelectBlock,
+  person2SelectBlock,
+  criteriaSelectBlock,
 ];
 
-const top10SubView = [
+const meetLinkSubView = [{ type: "divider" }];
+
+const rankingSubView = [
   {
     type: "divider",
   },
@@ -738,7 +672,8 @@ module.exports = {
   lastmeetSubView,
   bestmeetSubView,
   compareSubView,
-  top10SubView,
+  meetLinkSubView,
+  rankingSubView,
 
   singlemeetResultMessageView,
   compareResultMessageView,

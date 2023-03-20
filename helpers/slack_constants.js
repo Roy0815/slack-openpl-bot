@@ -13,12 +13,16 @@ module.exports = {
   //blocks
   blockEntryDialogRadioButtons: "block_entrydialog_radiobuttons",
   blockEntryDialogConversationSelect: "block_entrydialog_conversation_select",
-  blockLastMeetSubViewPersonInput: "block_lastmeet_subview_person_input",
+  blockPerson1InputSubView: "block_person1_input_subview",
+  blockPerson2InputSubView: "block_person2_input_subview",
+  blockCriteriaInputSubView: "block_criteria_input_subview",
 
   //actions
   actionEntryDialogRadioButtons: "action_entry_dialog_radiobuttons",
   actionEntryDialogConversationSelect: "action_entrydialog_conversation_select",
-  actionLastMeetSubViewPersonInput: "action_lastmeet_subview_person_input",
+  actionPerson1InputSubView: "action_person1_input_subview",
+  actionPerson2InputSubView: "action_person2_input_subview",
+  actionCriteriaInputSubView: "action_criteria_input_subview",
 
   //values for selects
   criteria: ["absolute", "dots", "wilks"],
