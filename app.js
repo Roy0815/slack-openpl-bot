@@ -29,14 +29,19 @@ app.command(
   }
 );
 
+// all functional commands
 app.command(
-  `/${slack_cons.commandLastmeet}`,
+  new RegExp(
+    `^/(${slack_cons.commandLastmeet})?(${slack_cons.commandBestmeet})?(${slack_cons.commandCompare})?(${slack_cons.commandMeetlink})?(${slack_cons.commandRanking})?$`
+  ),
   async ({ command, ack, respond, client }) => {
     await ack();
 
+    let openPlCommand = command.command.slice(1);
+
     try {
       slack_funcs.validateTextForCommand({
-        command: slack_cons.commandLastmeet,
+        command: openPlCommand,
         text: command.text,
       });
       await respond(slack_cons.messagePendingResult);
@@ -51,7 +56,7 @@ app.command(
     try {
       await client.chat.postMessage(
         await slack_funcs.getResultMessage({
-          command: slack_cons.commandLastmeet,
+          command: openPlCommand,
           channel: command.channel_id,
           text: command.text,
         })
@@ -65,61 +70,6 @@ app.command(
         text: e.toString(),
       });
     }
-  }
-);
-
-app.command(
-  `/${slack_cons.commandBestmeet}`,
-  async ({ command, ack, respond }) => {
-    await ack();
-
-    let retView = slack_funcs.getResultMessage(
-      command.channel,
-      slack_cons.commandBestmeet
-    );
-    retView.response_type = "in_channel";
-
-    await respond(retView);
-  }
-);
-
-app.command(
-  `/${slack_cons.commandCompare}`,
-  async ({ command, ack, respond }) => {
-    await ack();
-
-    let retView = await slack_funcs.getCompareResult(command);
-    retView.response_type = "in_channel";
-
-    await respond(retView);
-  }
-);
-
-app.command(
-  `/${slack_cons.commandMeetlink}`,
-  async ({ command, ack, respond }) => {
-    await ack();
-
-    await respond({
-      text: `Here is the link to the meet that <@${
-        command.user_id
-      }> requested: ${slack_funcs.getMeetLink()}`,
-      response_type: "in_channel",
-    });
-  }
-);
-
-app.command(
-  `/${slack_cons.commandRanking}`,
-  async ({ command, ack, respond }) => {
-    await ack();
-
-    await respond({
-      text: `Here is the link to the ranking that <@${
-        command.user_id
-      }> requested: ${slack_funcs.getRankingLink()}`,
-      response_type: "in_channel",
-    });
   }
 );
 
