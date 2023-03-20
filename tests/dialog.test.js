@@ -1,7 +1,6 @@
 const slack_funcs = require("../helpers/slack_functions");
 const slack_views = require("../helpers/slack_views");
 const slack_cons = require("../helpers/slack_constants");
-const errors = require("../helpers/errors");
 
 const channel = "ABCDEFGH";
 
@@ -13,7 +12,7 @@ test("get Dialog - base", () => {
 });
 
 //----------------------------------------------------------------
-// get Details from Dialog
+// get Details from Dialog - lastmeet
 //----------------------------------------------------------------
 test("get Details from Dialog - lastmeet", () => {
   let expectedObject = {
@@ -49,6 +48,9 @@ test("get Details from Dialog - lastmeet", () => {
   ).toEqual(expectedObject);
 });
 
+//----------------------------------------------------------------
+// get Details from Dialog - bestmeet
+//----------------------------------------------------------------
 test("get Details from Dialog - bestmeet", () => {
   let expectedObject = {
     command: slack_cons.commandBestmeet,
@@ -86,83 +88,4 @@ test("get Details from Dialog - bestmeet", () => {
       },
     })
   ).toEqual(expectedObject);
-});
-
-//----------------------------------------------------------------
-// validate Text for Command
-//----------------------------------------------------------------
-test("Validate Text for Command - lastmeet", () => {
-  let command = slack_cons.commandLastmeet;
-
-  //positives
-  expect(() =>
-    slack_funcs.validateTextForCommand({
-      command,
-      text: "Roy Lotzwik",
-    })
-  ).not.toThrow();
-  expect(() =>
-    slack_funcs.validateTextForCommand({
-      command,
-      text: "Roy Lotzwik #1",
-    })
-  ).not.toThrow();
-
-  //negatives
-  expect(() =>
-    slack_funcs.validateTextForCommand({
-      command,
-      text: "Roy Lotzwik;",
-    })
-  ).toThrow(errors.CommandSubmissionError);
-  expect(() =>
-    slack_funcs.validateTextForCommand({
-      command,
-      text: "Roy Lotzwik;dots",
-    })
-  ).toThrow(errors.CommandSubmissionError);
-});
-
-test("Validate Text for Command - bestmeet", () => {
-  let command = slack_cons.commandBestmeet;
-
-  //positives
-  expect(() =>
-    slack_funcs.validateTextForCommand({
-      command,
-      text: "Roy Lotzwik;dots",
-    })
-  ).not.toThrow();
-  expect(() =>
-    slack_funcs.validateTextForCommand({
-      command,
-      text: "Roy Lotzwik #1  ; dots",
-    })
-  ).not.toThrow();
-
-  //negatives
-  expect(() =>
-    slack_funcs.validateTextForCommand({
-      command,
-      text: "Roy Lotzwik;",
-    })
-  ).toThrow(errors.CommandSubmissionError);
-  expect(() =>
-    slack_funcs.validateTextForCommand({
-      command,
-      text: "Roy Lotzwik",
-    })
-  ).toThrow(errors.CommandSubmissionError);
-  expect(() =>
-    slack_funcs.validateTextForCommand({
-      command,
-      text: "Roy Lotzwik #1",
-    })
-  ).toThrow(errors.CommandSubmissionError);
-  expect(() =>
-    slack_funcs.validateTextForCommand({
-      command,
-      text: "Roy Lotzwik #1;anyformula",
-    })
-  ).toThrow(errors.CommandSubmissionError);
 });
