@@ -18,15 +18,9 @@ const pool = new Pool({
   port: process.env.DB_POSTGRES_PORT,
 });
 
-module.exports = {
-  startUpdateDatabase: function () {
-    console.log("Database update started");
-    downloadZip();
-  },
-  selectUsers,
-  selectLastMeet,
-};
-
+//----------------------------------------------------------------
+// Private functions
+//----------------------------------------------------------------
 function unzipFolder() {
   fs.createReadStream(zipPath)
     .pipe(unzip.Parse())
@@ -105,6 +99,13 @@ function updateDatabase() {
   });
 }
 
+function buildNamePattern(name) {
+  return `%${name.split(" ").join("%")}%`;
+}
+
+//----------------------------------------------------------------
+// Public functions
+//----------------------------------------------------------------
 function selectLastMeet(name) {
   let query =
     "SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, bodyweightkg, place, dots, best3squatkg, best3benchkg, best3deadliftkg, totalkg " +
@@ -126,6 +127,11 @@ async function selectUsers(names) {
   return result.rows;
 }
 
-function buildNamePattern(name) {
-  return `%${name.split(" ").join("%")}%`;
-}
+module.exports = {
+  startUpdateDatabase: function () {
+    console.log("Database update started");
+    downloadZip();
+  },
+  selectUsers,
+  selectLastMeet,
+};
