@@ -31,9 +31,7 @@ app.command(
 
 // all functional commands
 app.command(
-  new RegExp(
-    `^/(\b${slack_cons.commandLastmeet}\b)|(\b${slack_cons.commandBestmeet}\b)|(\b${slack_cons.commandCompare}\b)|(\b${slack_cons.commandMeetlink}\b)|(\b${slack_cons.commandRanking}\b)$`
-  ),
+  slack_cons.regexFunctionalCommands,
   async ({ command, ack, respond, client }) => {
     await ack();
 
@@ -46,8 +44,8 @@ app.command(
       });
       await respond(slack_cons.messagePendingResult);
     } catch (e) {
-      if (!e instanceof CommandSubmissionError) {
-        throw e;
+      if (!(e instanceof CommandSubmissionError)) {
+        slack_funcs.handleError(e);
       }
       await respond(e.toString());
       return;
@@ -62,7 +60,9 @@ app.command(
         })
       );
     } catch (e) {
-      if (!e instanceof OpenplError) throw e;
+      if (!(e instanceof OpenplError)) {
+        slack_funcs.handleError(e);
+      }
 
       await client.chat.postEphemeral({
         channel: command.channel_id,
@@ -129,8 +129,8 @@ app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
   try {
     infoObj = slack_funcs.getDetailsFromDialog(body);
   } catch (e) {
-    if (!e instanceof CommandSubmissionError) {
-      throw e;
+    if (!(e instanceof CommandSubmissionError)) {
+      slack_funcs.handleError(e);
     }
     await ack(e.toViewResponseObject());
     return;
@@ -155,8 +155,8 @@ app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
     await client.chat.postMessage(await slack_funcs.getResultMessage(infoObj));
   } catch (e) {
     //error on server
-    if (!e instanceof OpenplError) {
-      throw e;
+    if (!(e instanceof OpenplError)) {
+      slack_funcs.handleError(e);
     }
 
     //error to user
@@ -182,6 +182,7 @@ app.event("app_mention", async ({ event, client }) => {
 
 //******************** Errors ********************//
 app.error(async ({ error, context, body }) => {
+  //TODO: not working yet
   //catch server reponse time: notify user
   if (body.command && error.data.error == "expired_trigger_id") {
     await client.chat.postMessage({
@@ -190,8 +191,7 @@ app.error(async ({ error, context, body }) => {
     });
   }
 
-  //log error
-  console.log(error);
+  console.error(error);
 });
 
 //start the app
