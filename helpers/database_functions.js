@@ -116,11 +116,11 @@ function selectLastMeet(name) {
   return pool.query(query);
 }
 
-async function selectUsers(names) {
+async function selectLifter(name) {
   let query =
     "SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, totalkg " +
     "FROM public.lifterdata_csv " +
-    `WHERE name LIKE '${buildNamePattern(names[0])}' ` +
+    `WHERE name LIKE '${buildNamePattern(name)}' ` +
     "ORDER BY name ASC, date DESC;";
 
   let result = await pool.query(query);
@@ -132,6 +132,6 @@ module.exports = {
     console.log("Database update started");
     downloadZip();
   },
-  selectUsers,
+  selectLifter,
   selectLastMeet,
 };

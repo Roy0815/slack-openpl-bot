@@ -41,7 +41,7 @@ async function getLastmeetResult({ channel, person }) {
   if (!person || person == "") throw new errors.NoInputError(["person name"]);
 
   //check user exists and is unique
-  let users = await db_funcs.selectUsers([person]);
+  let users = await db_funcs.selectLifter(person);
 
   if (users.length > 1) throw new errors.AmbiguousLifterError(users);
 
