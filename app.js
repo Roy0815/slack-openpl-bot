@@ -83,18 +83,6 @@ app.command("/update_database", async ({ ack, respond }) => {
 
 app.command("/helloworld", async ({ command, ack, client, respond }) => {
   await ack();
-
-  let users = await db_funcs.selectUsers([command.text]);
-
-  if (users.length > 1) {
-    //dialog
-    return;
-  }
-
-  let { rows } = await db_funcs.selectLastMeet(command.text);
-  let retView = slack_funcs.getLastmeetResult("", rows[0]);
-
-  respond(retView);
 });
 
 //******************** Actions ********************//
