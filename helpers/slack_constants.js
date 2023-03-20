@@ -1,11 +1,18 @@
+const commandDialog = "openpl";
+const commandLastmeet = "lastmeet";
+const commandBestmeet = "bestmeet";
+const commandCompare = "compare";
+const commandMeetlink = "meetlink";
+const commandRanking = "ranking";
+
 module.exports = {
   //commands
-  commandDialog: "openpl",
-  commandLastmeet: "lastmeet",
-  commandBestmeet: "bestmeet",
-  commandCompare: "compare",
-  commandMeetlink: "meetlink",
-  commandRanking: "ranking",
+  commandDialog,
+  commandLastmeet,
+  commandBestmeet,
+  commandCompare,
+  commandMeetlink,
+  commandRanking,
 
   //view
   viewNameEntryDialog: "entrydialog",
@@ -24,14 +31,22 @@ module.exports = {
   actionPerson2InputSubView: "action_person2_input_subview",
   actionCriteriaInputSubView: "action_criteria_input_subview",
 
-  //values for selects
-  criteria: ["absolute", "dots", "wilks"],
-  lift: ["squat", "bench", "deadlift", "total"],
+  //values for commands
+  criteriaAbsolute: "absolute",
+  criteriaDots: "dots",
+  criteriaWilks: "wilks",
+  //lift: ["squat", "bench", "deadlift", "total"],
 
   //regex validations
-  regexLifterNameValidation: new RegExp(/^[A-Za-zÀ-ÖØ-öø-ÿ0-9 #]*$/),
+  regexFunctionalCommands: new RegExp(
+    `^/(\\b${commandLastmeet}\\b)|(\\b${commandBestmeet}\\b)|(\\b${commandCompare}\\b)|(\\b${commandMeetlink}\\b)|(\\b${commandRanking}\\b)$`
+  ),
+  regexLifterNameValidation: /^[A-Za-zÀ-ÖØ-öø-ÿ0-9 #]*$/,
+  regexCriteriaValidation: /^(\babsolute\b)|(\bdots\b)|(\bwilks\b)$/,
 
   //messages
   messageLifterNameNotValid: `Please only use letters, spaces and numbers (e.g. #1) for the lifters name`,
+  messageCriteriaNotValid:
+    "Please only use `absolute`, `dots` or `wilks` as criteria",
   messagePendingResult: `Fetching data from database...`,
 };
