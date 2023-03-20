@@ -18,6 +18,25 @@ const pool = new Pool({
   port: process.env.DB_POSTGRES_PORT,
 });
 
+const testDataSingle = [
+  {
+    name: "Roy Lotzwik",
+    date: "22.09.2019",
+    meetname: "BW Meisterschaften 2019",
+    division: "Juniors",
+    weightclasskg: "93 kg",
+    bodyweightkg: "93 kg",
+    place: "2",
+    dots: "500",
+    best3squatkg: "255 kg",
+    best3benchkg: "157,5 kg",
+    best3deadliftkg: "262,5 kg",
+    totalkg: "675 kg",
+  },
+];
+const testDataMultiple = [{}, {}];
+const testDataMany = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
+
 //----------------------------------------------------------------
 // Private functions
 //----------------------------------------------------------------
@@ -103,10 +122,22 @@ function buildNamePattern(name) {
   return `%${name.split(" ").join("%")}%`;
 }
 
+function getTestData(person) {
+  if (person == "") return [];
+
+  let nameArr = person.split(" ");
+  if (nameArr.length == 1) return testDataMany;
+  if (nameArr.length == 2) return testDataMultiple;
+
+  return testDataSingle;
+}
+
 //----------------------------------------------------------------
 // Public functions
 //----------------------------------------------------------------
 function selectLastMeet(person) {
+  if (process.env.NODE_ENV == "test") return { rows: getTestData(person) };
+
   let query =
     "SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, bodyweightkg, place, dots, best3squatkg, best3benchkg, best3deadliftkg, totalkg " +
     "FROM public.lifterdata_csv " +
@@ -117,6 +148,8 @@ function selectLastMeet(person) {
 }
 
 function selectBestMeet({ person, criteria }) {
+  if (process.env.NODE_ENV == "test") return { rows: getTestData(person) };
+
   let sort = "";
 
   switch (criteria) {
@@ -141,6 +174,8 @@ function selectBestMeet({ person, criteria }) {
 }
 
 async function selectLifter(name) {
+  if (process.env.NODE_ENV == "test") return getTestData(name);
+
   let query =
     "SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, totalkg " +
     "FROM public.lifterdata_csv " +
