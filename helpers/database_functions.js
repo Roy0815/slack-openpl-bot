@@ -1,9 +1,9 @@
 // file with all functions for database read/ write actions
-
 const fs = require("fs");
 const unzip = require("unzip-stream");
 const https = require("https");
 const { Pool } = require("pg");
+const slack_cons = require("./slack_constants");
 
 const csvPath = "/var/lib/files/openpowerlifting-latest.csv";
 const zipPath = "/var/lib/files/openpowerlifting-latest.zip";
@@ -106,12 +106,36 @@ function buildNamePattern(name) {
 //----------------------------------------------------------------
 // Public functions
 //----------------------------------------------------------------
-function selectLastMeet(name) {
+function selectLastMeet(person) {
   let query =
     "SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, bodyweightkg, place, dots, best3squatkg, best3benchkg, best3deadliftkg, totalkg " +
     "FROM public.lifterdata_csv " +
-    `WHERE name LIKE '${buildNamePattern(name)}' ` +
+    `WHERE name LIKE '${buildNamePattern(person)}' ` +
     "ORDER BY name ASC, date DESC;";
+
+  return pool.query(query);
+}
+
+function selectBestMeet({ person, criteria }) {
+  let sort = "";
+
+  switch (criteria) {
+    case slack_cons.criteriaAbsolute:
+      sort += `, totalkg DESC`;
+      break;
+    case slack_cons.criteriaDots:
+      sort += `, dots DESC`;
+      break;
+    case slack_cons.criteriaWilks:
+      sort += `, wilks DESC`;
+      break;
+  }
+
+  let query =
+    "SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, bodyweightkg, place, dots, best3squatkg, best3benchkg, best3deadliftkg, totalkg " +
+    "FROM public.lifterdata_csv " +
+    `WHERE name LIKE '${buildNamePattern(person)}' ` +
+    `ORDER BY name ASC${sort};`;
 
   return pool.query(query);
 }
@@ -134,4 +158,5 @@ module.exports = {
   },
   selectLifter,
   selectLastMeet,
+  selectBestMeet,
 };

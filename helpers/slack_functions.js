@@ -38,8 +38,6 @@ function getSingleMeetResultView({ personObj, channel }) {
 }
 
 async function getLastmeetResult({ channel, person }) {
-  if (!person || person == "") throw new errors.NoInputError(["person name"]);
-
   //check user exists and is unique
   let users = await db_funcs.selectLifter(person);
 
@@ -59,28 +57,24 @@ async function getLastmeetResult({ channel, person }) {
   return view;
 }
 
-function getBestmeetResult(channel, person) {
-  let resultMessage = JSON.parse(
-    JSON.stringify(slack_views.singlemeetResultMessageView)
-  );
-  resultMessage.text = `Best meet of ${person.name}`; //message preview
-  resultMessage.blocks[0].text.text = `Best meet of *${person.name}* <https://www.openpowerlifting.org/u/roylotzwik|openpowerlifting.org>`;
+async function getBestmeetResult({ channel, person, criteria }) {
+  //check user exists and is unique
+  let users = await db_funcs.selectLifter(person);
 
-  resultMessage.blocks[0].fields[0].text = `*Meet:* ${person.meetname}`;
-  resultMessage.blocks[0].fields[1].text = `*Date:* ${person.date}`;
+  if (users.length > 1) throw new errors.AmbiguousLifterError(users);
 
-  resultMessage.blocks[1].fields[0].text = `*Categorie:* ${person.division}`;
-  resultMessage.blocks[1].fields[1].text = `*Class:* ${person.weightclasskg}`;
-  resultMessage.blocks[1].fields[2].text = `*Place:* ${person.place}`;
-  resultMessage.blocks[1].fields[3].text = `*Dots:* ${person.dots}`;
+  if (users.length == 0) throw new errors.NoLifterFoundError(person);
 
-  resultMessage.blocks[2].fields[0].text = `*Squat:* ${person.best3squatkg}`;
-  resultMessage.blocks[2].fields[1].text = `*Bench:* ${person.best3benchkg}`;
-  resultMessage.blocks[2].fields[2].text = `*Deadlift:* ${person.best3deadliftkg}`;
-  resultMessage.blocks[2].fields[3].text = `*Total:* ${person.totalkg}`;
+  //fetch data from database
+  let { rows } = await db_funcs.selectBestMeet({ person, criteria });
 
-  resultMessage.channel = channel;
-  return resultMessage;
+  //build view
+  let view = getSingleMeetResultView({ personObj: rows[0], channel });
+
+  view.text = `Best meet of *${rows[0].name}*`; //message preview
+  view.blocks[0].text.text = `Best meet of *${rows[0].name}* <https://www.openpowerlifting.org/u/roylotzwik|openpowerlifting.org>`;
+
+  return view;
 }
 
 async function getCompareResult(command) {
@@ -130,11 +124,44 @@ function getCommandTextFromDialog({ command, values }) {
           slack_cons.actionPerson1InputSubView
         ].value;
       break;
+
+    case slack_cons.commandBestmeet:
+      text = `${
+        values[slack_cons.blockPerson1InputSubView][
+          slack_cons.actionPerson1InputSubView
+        ].value
+      };${
+        values[slack_cons.blockCriteriaInputSubView][
+          slack_cons.actionCriteriaInputSubView
+        ].selected_option.value
+      }`;
+      break;
   }
 
   validateTextForCommand({ command, text });
 
   return text;
+}
+
+function getInfoObjectFromText({ command, channel, text }) {
+  let infoObject = {};
+  infoObject.channel = channel;
+
+  switch (command) {
+    case slack_cons.commandLastmeet:
+      infoObject.person = text.trim();
+      break;
+
+    case slack_cons.commandBestmeet:
+      [infoObject.person, infoObject.criteria] = text
+        .split(";")
+        .map(function (item) {
+          return item.trim();
+        });
+      break;
+  }
+
+  return infoObject;
 }
 
 //----------------------------------------------------------------
@@ -180,14 +207,15 @@ async function getResultMessage({ command, text, channel }) {
 
   switch (command) {
     case slack_cons.commandLastmeet:
-      view = await getLastmeetResult({ channel, person: text });
+      view = await getLastmeetResult(
+        getInfoObjectFromText({ command, text, channel })
+      );
       break;
 
     case slack_cons.commandBestmeet:
-      view = await getBestmeetResult({ channel, person: text });
-      break;
-
-    default:
+      view = await getBestmeetResult(
+        getInfoObjectFromText({ command, text, channel })
+      );
       break;
   }
 
@@ -236,20 +264,50 @@ function getEntryDialog(subviewName) {
 function validateTextForCommand({ command, text }) {
   switch (command) {
     case slack_cons.commandLastmeet:
-      if (!slack_cons.regexLifterNameValidation.test(text))
+      if (
+        !text ||
+        !slack_cons.regexLifterNameValidation.test(text) ||
+        text == ""
+      )
         throw new errors.CommandSubmissionError({
           block: slack_cons.blockPerson1InputSubView,
           message: slack_cons.messageLifterNameNotValid,
         });
       break;
+
     case slack_cons.commandBestmeet:
-      if (!slack_cons.regexLifterNameValidation.test(text))
+      if (!text)
         throw new errors.CommandSubmissionError({
           block: slack_cons.blockPerson1InputSubView,
           message: slack_cons.messageLifterNameNotValid,
+        });
+
+      //split variables and remove spaces
+      let [lifterName, criteria] = text.split(";").map(function (item) {
+        return item.trim();
+      });
+
+      if (
+        !slack_cons.regexLifterNameValidation.test(lifterName) ||
+        lifterName == ""
+      )
+        throw new errors.CommandSubmissionError({
+          block: slack_cons.blockPerson1InputSubView,
+          message: slack_cons.messageLifterNameNotValid,
+        });
+
+      if (!slack_cons.regexCriteriaValidation.test(criteria) || criteria == "")
+        throw new errors.CommandSubmissionError({
+          block: slack_cons.blockCriteriaInputSubView,
+          message: slack_cons.messageCriteriaNotValid,
         });
       break;
   }
+}
+
+function handleError(error) {
+  console.error(error);
+  throw e;
 }
 
 //exports
@@ -260,4 +318,5 @@ module.exports = {
   getEntryDialog,
   getEntryMessage,
   validateTextForCommand,
+  handleError,
 };

@@ -272,7 +272,7 @@ const criteriaSelectBlock = {
         text: "Dots",
         emoji: true,
       },
-      value: "dots",
+      value: slack_cons.criteriaDots,
     },
     options: [
       {
@@ -281,7 +281,7 @@ const criteriaSelectBlock = {
           text: "Absolute",
           emoji: true,
         },
-        value: "absolute",
+        value: slack_cons.criteriaAbsolute,
       },
       {
         text: {
@@ -289,7 +289,7 @@ const criteriaSelectBlock = {
           text: "Wilks",
           emoji: true,
         },
-        value: "wilks",
+        value: slack_cons.criteriaWilks,
       },
       {
         text: {
@@ -297,7 +297,7 @@ const criteriaSelectBlock = {
           text: "Dots",
           emoji: true,
         },
-        value: "dots",
+        value: slack_cons.criteriaDots,
       },
     ],
   },
