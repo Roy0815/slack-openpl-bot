@@ -32,7 +32,7 @@ app.command(
 // all functional commands
 app.command(
   new RegExp(
-    `^/(${slack_cons.commandLastmeet})?(${slack_cons.commandBestmeet})?(${slack_cons.commandCompare})?(${slack_cons.commandMeetlink})?(${slack_cons.commandRanking})?$`
+    `^/(\b${slack_cons.commandLastmeet}\b)|(\b${slack_cons.commandBestmeet}\b)|(\b${slack_cons.commandCompare}\b)|(\b${slack_cons.commandMeetlink}\b)|(\b${slack_cons.commandRanking}\b)$`
   ),
   async ({ command, ack, respond, client }) => {
     await ack();
