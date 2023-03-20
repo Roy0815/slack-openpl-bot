@@ -303,6 +303,25 @@ const criteriaSelectBlock = {
   },
 };
 
+const meetNameSelectBlock = {
+  type: "input",
+  block_id: slack_cons.blockMeetNameInputSubView,
+  element: {
+    type: "plain_text_input",
+    action_id: slack_cons.actionMeetNameInputSubView,
+    placeholder: {
+      type: "plain_text",
+      text: "Enter meet name",
+      emoji: true,
+    },
+  },
+  label: {
+    type: "plain_text",
+    text: "Meet Name",
+    emoji: true,
+  },
+};
+
 const lastmeetSubView = [
   {
     type: "divider",
@@ -327,28 +346,11 @@ const compareSubView = [
   criteriaSelectBlock,
 ];
 
-const meetLinkSubView = [{ type: "divider" }];
+const meetLinkSubView = [{ type: "divider" }, meetNameSelectBlock];
 
 const rankingSubView = [
   {
     type: "divider",
-  },
-  {
-    type: "input",
-    element: {
-      type: "plain_text_input",
-      action_id: "top10_meet_input",
-      placeholder: {
-        type: "plain_text",
-        text: "optional",
-        emoji: true,
-      },
-    },
-    label: {
-      type: "plain_text",
-      text: "Meet Name",
-      emoji: true,
-    },
   },
   {
     type: "section",

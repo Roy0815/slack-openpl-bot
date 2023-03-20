@@ -23,6 +23,7 @@ module.exports = {
   blockPerson1InputSubView: "block_person1_input_subview",
   blockPerson2InputSubView: "block_person2_input_subview",
   blockCriteriaInputSubView: "block_criteria_input_subview",
+  blockMeetNameInputSubView: "block_meet_name_input_subview",
 
   //actions
   actionEntryDialogRadioButtons: "action_entry_dialog_radiobuttons",
@@ -30,6 +31,7 @@ module.exports = {
   actionPerson1InputSubView: "action_person1_input_subview",
   actionPerson2InputSubView: "action_person2_input_subview",
   actionCriteriaInputSubView: "action_criteria_input_subview",
+  actionMeetNameInputSubView: "action_meet_name_input_subview",
 
   //values for commands
   criteriaAbsolute: "absolute",
