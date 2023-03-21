@@ -20,12 +20,13 @@ app.command(
 
     if (command.text.includes("help")) {
       await respond(slack_funcs.getHelpView(command));
-    } else {
-      let view = slack_funcs.getEntryDialog();
-      view.trigger_id = command.trigger_id;
-
-      await client.views.open(view);
+      return;
     }
+
+    const view = slack_funcs.getEntryDialog();
+    view.trigger_id = command.trigger_id;
+
+    await client.views.open(view);
   }
 );
 
@@ -43,31 +44,30 @@ app.command(
         text: command.text,
       });
       await respond(slack_cons.messagePendingResult);
-    } catch (e) {
-      if (!(e instanceof CommandSubmissionError)) {
-        slack_funcs.handleError(e);
+    } catch (error) {
+      if (!(error instanceof CommandSubmissionError)) {
+        slack_funcs.handleError(error);
       }
-      await respond(e.toString());
+      await respond(error.toString());
       return;
     }
 
     try {
-      await client.chat.postMessage(
-        await slack_funcs.getResultMessage({
-          command: openPlCommand,
-          channel: command.channel_id,
-          text: command.text,
-        })
-      );
-    } catch (e) {
-      if (!(e instanceof OpenplError)) {
-        slack_funcs.handleError(e);
+      const message = await slack_funcs.getResultMessage({
+        command: openPlCommand,
+        channel: command.channel_id,
+        text: command.text,
+      });
+      await client.chat.postMessage(message);
+    } catch (error) {
+      if (!(error instanceof OpenplError)) {
+        slack_funcs.handleError(error);
       }
 
       await client.chat.postEphemeral({
         channel: command.channel_id,
         user: command.user_id,
-        text: e.toString(),
+        text: error.toString(),
       });
     }
   }
@@ -75,9 +75,7 @@ app.command(
 
 app.command("/update_database", async ({ ack, respond }) => {
   await ack();
-
   db_funcs.startUpdateDatabase();
-
   respond("Database update started");
 });
 
@@ -88,7 +86,7 @@ app.command("/helloworld", async ({ command, ack, client, respond }) => {
 //******************** Actions ********************//
 app.action("entrymessage_start", async ({ body, client, ack }) => {
   await ack();
-  let view = slack_funcs.getEntryDialog();
+  const view = slack_funcs.getEntryDialog();
   view.trigger_id = body.trigger_id;
 
   await client.views.open(view);
@@ -96,7 +94,6 @@ app.action("entrymessage_start", async ({ body, client, ack }) => {
 
 app.action("entrymessage_cancel", async ({ respond, ack }) => {
   await ack();
-
   await respond({
     delete_original: true,
   });
@@ -106,11 +103,12 @@ app.action(
   slack_cons.actionEntryDialogRadioButtons,
   async ({ ack, body, client }) => {
     await ack();
-    let view = slack_funcs.getEntryDialog(
+
+    const view = slack_funcs.getEntryDialog(
       body.actions[0].selected_option.value
     );
-    view.view_id = body.view.id;
 
+    view.view_id = body.view.id;
     await client.views.update(view);
   }
 );
@@ -119,7 +117,7 @@ app.action(
 app.action(new RegExp(`.*`), async ({ body, ack }) => {
   try {
     await ack();
-  } catch (err) {} //ReceiverMultipleAckError
+  } catch (error) {} //ReceiverMultipleAckError
 });
 
 //******************** View Submissions ********************//
@@ -128,17 +126,17 @@ app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
 
   try {
     infoObj = slack_funcs.getDetailsFromDialog(body);
-  } catch (e) {
-    if (!(e instanceof CommandSubmissionError)) {
-      slack_funcs.handleError(e);
+  } catch (error) {
+    if (!(error instanceof CommandSubmissionError)) {
+      slack_funcs.handleError(error);
     }
-    await ack(e.toViewResponseObject());
+    await ack(error.toViewResponseObject());
     return;
   }
 
   await ack();
 
-  let channel =
+  const channel =
     body.view.state.values[slack_cons.blockEntryDialogConversationSelect][
       slack_cons.actionEntryDialogConversationSelect
     ].selected_conversation;
@@ -152,25 +150,26 @@ app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
     });
 
     //result message
-    await client.chat.postMessage(await slack_funcs.getResultMessage(infoObj));
-  } catch (e) {
+    const message = await slack_funcs.getResultMessage(infoObj);
+    await client.chat.postMessage(message);
+  } catch (error) {
     //error on server
-    if (!(e instanceof OpenplError)) {
-      slack_funcs.handleError(e);
+    if (!(error instanceof OpenplError)) {
+      slack_funcs.handleError(error);
     }
 
     //error to user
     await client.chat.postEphemeral({
       channel: channel,
       user: body.user.id,
-      text: e.toString(),
+      text: error.toString(),
     });
   }
 });
 
 //******************** Events ********************//
 app.event("app_home_opened", async ({ event, client }) => {
-  let view = slack_funcs.homeView;
+  const view = slack_funcs.homeView;
   view.user_id = event.user;
 
   await client.views.publish(view);
