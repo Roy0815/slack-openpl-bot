@@ -83,3 +83,62 @@ test("Validate Text for Command - bestmeet", () => {
     })
   ).toThrow(errors.CommandSubmissionError);
 });
+
+//----------------------------------------------------------------
+// compare
+//----------------------------------------------------------------
+test("Validate Text for Command - compare", () => {
+  let command = slack_cons.commandCompare;
+
+  //positives
+  expect(() =>
+    slack_funcs.validateTextForCommand({
+      command,
+      text: "Roy Lotzwik, Simon Oswald;dots;total",
+    })
+  ).not.toThrow();
+  expect(() =>
+    slack_funcs.validateTextForCommand({
+      command,
+      text: "Roy Lotzwik #1 , Simon Daniàl Òswald ; wilks; squat",
+    })
+  ).not.toThrow();
+  expect(() =>
+    slack_funcs.validateTextForCommand({
+      command,
+      text: "Roy Lotzwik #1 , Simon Daniàl Òswald, Royberto Blanko ; wilks; squat",
+    })
+  ).not.toThrow();
+
+  //negatives
+  expect(() =>
+    slack_funcs.validateTextForCommand({
+      command,
+      text: "Roy Lotzwik; wilks; squat",
+    })
+  ).toThrow(errors.CommandSubmissionError);
+  expect(() =>
+    slack_funcs.validateTextForCommand({
+      command,
+      text: "Roy Lotzwik, Simon Daniel Oswald;wilks",
+    })
+  ).toThrow(errors.CommandSubmissionError);
+  expect(() =>
+    slack_funcs.validateTextForCommand({
+      command,
+      text: "Roy Lotzwik, Simon Daniel Oswald;squat;wilks",
+    })
+  ).toThrow(errors.CommandSubmissionError);
+  expect(() =>
+    slack_funcs.validateTextForCommand({
+      command,
+      text: "Roy Lotzwik #1, Simon Oswald;dots;bänch",
+    })
+  ).toThrow(errors.CommandSubmissionError);
+  expect(() =>
+    slack_funcs.validateTextForCommand({
+      command,
+      text: "Roy Lotzwik #1; Simon Oswald;dots;bänch",
+    })
+  ).toThrow(errors.CommandSubmissionError);
+});
