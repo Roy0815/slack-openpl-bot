@@ -18,11 +18,11 @@ function getSingleMeetResultView({ personObj, channel }) {
   resultMessage.blocks[3].fields[0].text = `*Categorie:* ${personObj.division}`;
   resultMessage.blocks[3].fields[1].text = `*Class:* ${personObj.weightclasskg}`;
   resultMessage.blocks[3].fields[2].text = `*Place:* ${
-    personObj.place == 1
+    personObj.place === 1
       ? "🥇"
-      : personObj.place == 2
+      : personObj.place === 2
       ? "🥈"
-      : personObj.place == 3
+      : personObj.place === 3
       ? "🥉"
       : personObj.place
   }`;
@@ -43,7 +43,7 @@ async function getLastmeetResult({ channel, person }) {
 
   if (users.length > 1) throw new errors.AmbiguousLifterError(users);
 
-  if (users.length == 0) throw new errors.NoLifterFoundError(person);
+  if (users.length === 0) throw new errors.NoLifterFoundError(person);
 
   //fetch data from database
   let { rows } = await db_funcs.selectLastMeet(person);
@@ -63,7 +63,7 @@ async function getBestmeetResult({ channel, person, criteria }) {
 
   if (users.length > 1) throw new errors.AmbiguousLifterError(users);
 
-  if (users.length == 0) throw new errors.NoLifterFoundError(person);
+  if (users.length === 0) throw new errors.NoLifterFoundError(person);
 
   //fetch data from database
   let { rows } = await db_funcs.selectBestMeet({ person, criteria });
@@ -262,12 +262,14 @@ function getEntryDialog(subviewName) {
 }
 
 function validateTextForCommand({ command, text }) {
+  const texts = {};
+
   switch (command) {
     case slack_cons.commandLastmeet:
       if (
         !text ||
         !slack_cons.regexLifterNameValidation.test(text) ||
-        text == ""
+        text === ""
       )
         throw new errors.CommandSubmissionError({
           block: slack_cons.blockPerson1InputSubView,
@@ -276,30 +278,84 @@ function validateTextForCommand({ command, text }) {
       break;
 
     case slack_cons.commandBestmeet:
-      if (!text)
+      if (!text || text === "")
         throw new errors.CommandSubmissionError({
           block: slack_cons.blockPerson1InputSubView,
           message: slack_cons.messageLifterNameNotValid,
         });
 
       //split variables and remove spaces
-      let [lifterName, criteria] = text.split(";").map(function (item) {
+      [texts.lifterName, texts.criteria] = text.split(";").map(function (item) {
         return item.trim();
       });
 
       if (
-        !slack_cons.regexLifterNameValidation.test(lifterName) ||
-        lifterName == ""
+        !slack_cons.regexLifterNameValidation.test(texts.lifterName) ||
+        texts.lifterName === ""
       )
         throw new errors.CommandSubmissionError({
           block: slack_cons.blockPerson1InputSubView,
           message: slack_cons.messageLifterNameNotValid,
         });
 
-      if (!slack_cons.regexCriteriaValidation.test(criteria) || criteria == "")
+      if (
+        !slack_cons.regexCriteriaValidation.test(texts.criteria) ||
+        texts.criteria === ""
+      )
         throw new errors.CommandSubmissionError({
           block: slack_cons.blockCriteriaInputSubView,
           message: slack_cons.messageCriteriaNotValid,
+        });
+      break;
+
+    case slack_cons.commandCompare:
+      if (!text || text === "")
+        throw new errors.CommandSubmissionError({
+          block: slack_cons.blockPerson1InputSubView,
+          message: slack_cons.messageLifterNameNotValid,
+        });
+
+      //split variables and remove spaces
+      [texts.lifterName, texts.criteria, texts.lift] = text
+        .split(";")
+        .map(function (item) {
+          return item.trim();
+        });
+
+      // get all names
+      texts.lifters = texts.lifterName.split(",").map(function (item) {
+        return item.trim();
+      });
+
+      if (texts.lifters.length < 2)
+        throw new errors.CommandSubmissionError({
+          block: slack_cons.blockPerson2InputSubView,
+          message: slack_cons.messageNotEnoughLifters,
+        });
+
+      texts.lifters.forEach((name) => {
+        if (slack_cons.regexLifterNameValidation.test(name) && name !== "")
+          return;
+
+        throw new errors.CommandSubmissionError({
+          block: slack_cons.blockPerson1InputSubView,
+          message: slack_cons.messageLifterNameNotValid,
+        });
+      });
+
+      if (
+        !slack_cons.regexCriteriaValidation.test(texts.criteria) ||
+        texts.criteria === ""
+      )
+        throw new errors.CommandSubmissionError({
+          block: slack_cons.blockCriteriaInputSubView,
+          message: slack_cons.messageCriteriaNotValid,
+        });
+
+      if (!slack_cons.regexLiftValidation.test(texts.lift) || texts.lift === "")
+        throw new errors.CommandSubmissionError({
+          block: slack_cons.blockLiftInputSubView,
+          message: slack_cons.messageLiftNotValid,
         });
       break;
   }

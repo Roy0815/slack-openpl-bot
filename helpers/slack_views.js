@@ -303,6 +303,56 @@ const criteriaSelectBlock = {
   },
 };
 
+const liftSelectBlock = {
+  type: "section",
+  block_id: slack_cons.blockLiftInputSubView,
+  text: {
+    type: "mrkdwn",
+    text: "Which lift?",
+  },
+  accessory: {
+    type: "static_select",
+    action_id: slack_cons.actionLiftInputSubView,
+    initial_option: {
+      text: {
+        type: "plain_text",
+        text: "Total",
+      },
+      value: slack_cons.liftTotal,
+    },
+    options: [
+      {
+        text: {
+          type: "plain_text",
+          text: "Squat",
+        },
+        value: slack_cons.liftSquat,
+      },
+      {
+        text: {
+          type: "plain_text",
+          text: "Bench",
+        },
+        value: slack_cons.liftBench,
+      },
+      {
+        text: {
+          type: "plain_text",
+          text: "Deadlift",
+        },
+        value: slack_cons.liftDeadlift,
+      },
+      {
+        text: {
+          type: "plain_text",
+          text: "Total",
+        },
+        value: slack_cons.liftTotal,
+      },
+    ],
+  },
+};
+
 const meetNameSelectBlock = {
   type: "input",
   block_id: slack_cons.blockMeetNameInputSubView,
@@ -344,6 +394,7 @@ const compareSubView = [
   person1SelectBlock,
   person2SelectBlock,
   criteriaSelectBlock,
+  liftSelectBlock,
 ];
 
 const meetLinkSubView = [{ type: "divider" }, meetNameSelectBlock];
