@@ -168,12 +168,14 @@ function getInfoObjectFromText({ command, channel, text }) {
 // Public functions
 //----------------------------------------------------------------
 function getHelpView({ team_id, api_app_id }) {
-  let helpView = slack_views.helpView;
+  let helpView = JSON.parse(JSON.stringify(slack_views.helpView));
   helpView.blocks.push({
     type: "section",
     text: {
       type: "mrkdwn",
-      text: `Find more info here: <slack://app?team=${team_id}&id=${api_app_id}&tab=home|App Home>`,
+      text: `Find more info here:\n<slack://app?team=${team_id}&id=${
+        api_app_id
+      }&tab=home|App Home> (only works in Slack App)`,
     },
   });
 
