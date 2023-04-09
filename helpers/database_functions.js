@@ -34,8 +34,35 @@ const testDataSingle = [
     totalkg: "675 kg",
   },
 ];
-const testDataMultiple = [{}, {}];
-const testDataMany = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
+const testDataMultiple = [
+  testDataSingle[0],
+  {
+    name: "Simon Daniel Oswald",
+    date: "21.08.2022",
+    meetname: "DM Kraftdreikampf Equipped/Classic - Aktive",
+    division: "Open",
+    weightclasskg: "105 kg",
+    bodyweightkg: "103 kg",
+    place: "17",
+    dots: "411,74",
+    best3squatkg: "230 kg",
+    best3benchkg: "152,5 kg",
+    best3deadliftkg: "295 kg",
+    totalkg: "677,5 kg",
+  },
+];
+const testDataMany = [
+  testDataMultiple[0],
+  testDataMultiple[1],
+  testDataMultiple[0],
+  testDataMultiple[1],
+  testDataMultiple[0],
+  testDataMultiple[1],
+  testDataMultiple[0],
+  testDataMultiple[1],
+  testDataMultiple[0],
+  testDataMultiple[1],
+];
 
 //----------------------------------------------------------------
 // Private functions
