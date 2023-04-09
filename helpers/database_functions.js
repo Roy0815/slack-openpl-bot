@@ -67,7 +67,7 @@ const testDataMany = [
 //----------------------------------------------------------------
 // Private functions
 //----------------------------------------------------------------
-function unzipFolder() {
+function unzipFolder({ user, client }) {
   fs.createReadStream(zipPath)
     .pipe(unzip.Parse())
     .on("entry", (entry) => {
@@ -84,12 +84,17 @@ function unzipFolder() {
           console.log(err);
         }
       }); // delete ZIP
-      updateDatabase();
+      updateDatabase({ user, client });
       console.log("Unzip finished, Zip deleted");
+      if (user && client)
+        client.chat.postMessage({
+          channel: user,
+          text: "Unzip finished, Zip deleted",
+        });
     });
 }
 
-function downloadZip() {
+function downloadZip({ user, client }) {
   https
     .get(openPLurl, function (response) {
       switch (response.statusCode) {
@@ -101,21 +106,41 @@ function downloadZip() {
             })
             .on("end", function () {
               file.end();
-              unzipFolder(zipPath); //downloading done -> extract data
+              unzipFolder({ user, client }); //downloading done -> extract data
               console.log("Download of Zip finished");
+              if (user && client)
+                client.chat.postMessage({
+                  channel: user,
+                  text: "Download of Zip finished",
+                });
             });
           break;
         default:
           console.log("An Error occured while downloading");
+          if (user && client)
+            client.chat.postMessage({
+              channel: user,
+              text: `Response code ${response.statusCode} while downloading`,
+            });
       }
     })
     .on("error", (err) => {
       console.log("An Error occured while downloading");
+      if (user && client)
+        client.chat.postMessage({
+          channel: user,
+          text: "An Error occured while downloading",
+        });
     });
 }
 
-function updateDatabase() {
+function updateDatabase({ user, client }) {
   console.log("Database query started");
+  if (user && client)
+    client.chat.postMessage({
+      channel: user,
+      text: "Database query started",
+    });
 
   let query =
     "CREATE TEMP TABLE lifterdata_csv_temp ON COMMIT DROP " +
@@ -132,9 +157,19 @@ function updateDatabase() {
     if (err) {
       console.log("Error in Database query");
       console.log(err.stack);
+      if (user && client)
+        client.chat.postMessage({
+          channel: user,
+          text: "Error in Database query",
+        });
     } else {
       console.log("Database updated!");
       console.log(res?.[4]); //only log the insert
+      if (user && client)
+        client.chat.postMessage({
+          channel: user,
+          text: "Database updated!",
+        });
     }
     fs.unlink(csvPath, (err) => {
       if (err) {
@@ -142,6 +177,11 @@ function updateDatabase() {
       }
     }); // delete CSV
     console.log("CSV deleted");
+    if (user && client)
+      client.chat.postMessage({
+        channel: user,
+        text: "CSV deleted",
+      });
   });
 }
 
@@ -214,9 +254,9 @@ async function selectLifter(name) {
 }
 
 module.exports = {
-  startUpdateDatabase: function () {
+  startUpdateDatabase: function ({ user, client }) {
     console.log("Database update started");
-    downloadZip();
+    downloadZip({ user, client });
   },
   selectLifter,
   selectLastMeet,

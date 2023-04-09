@@ -73,9 +73,13 @@ app.command(
   }
 );
 
-app.command("/update_database", async ({ ack, respond }) => {
+app.command("/update_database", async ({ ack, respond, command, client }) => {
   await ack();
-  db_funcs.startUpdateDatabase();
+
+  if (command.text != process.env.ADMIN_TOKEN)
+    respond("Only admins are allowed to use this command");
+
+  db_funcs.startUpdateDatabase({ user: command.user_id, client });
   respond("Database update started");
 });
 
