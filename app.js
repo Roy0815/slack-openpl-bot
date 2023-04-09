@@ -3,6 +3,7 @@ const { App } = require("@slack/bolt");
 const db_funcs = require("./helpers/database_functions");
 const slack_funcs = require("./helpers/slack_functions");
 const slack_cons = require("./helpers/slack_constants");
+const slack_views = require("./helpers/slack_views");
 const { OpenplError, CommandSubmissionError } = require("./helpers/errors");
 
 // Create Bolt App
@@ -76,8 +77,10 @@ app.command(
 app.command("/update_database", async ({ ack, respond, command, client }) => {
   await ack();
 
-  if (command.text != process.env.ADMIN_TOKEN)
+  if (command.text != process.env.ADMIN_TOKEN) {
     respond("Only admins are allowed to use this command");
+    return;
+  }
 
   db_funcs.startUpdateDatabase({ user: command.user_id, client });
   respond("Database update started");
@@ -173,7 +176,7 @@ app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
 
 //******************** Events ********************//
 app.event("app_home_opened", async ({ event, client }) => {
-  const view = slack_funcs.homeView;
+  const view = JSON.parse(JSON.stringify(slack_views.homeView));
   view.user_id = event.user;
 
   await client.views.publish(view);
