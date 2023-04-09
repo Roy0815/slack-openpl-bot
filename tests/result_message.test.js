@@ -37,6 +37,9 @@ test("Validate get Result Message - lastmeet", async () => {
 
   expect(result.channel).toEqual(channel);
   expect(result.text).toMatch(/Last meet/);
+  expect(result.blocks[0].text.text).toEqual(
+    "Last meet of *Roy Lotzwik* <https://www.openpowerlifting.org/u/roylotzwik|openpowerlifting.org>"
+  );
   expect(result.blocks[2].fields[0].text).toEqual(
     "*Meet:* BW Meisterschaften 2019"
   );
@@ -77,6 +80,9 @@ test("Validate get Result Message - bestmeet", async () => {
 
   expect(result.channel).toEqual(channel);
   expect(result.text).toMatch(/Best meet/);
+  expect(result.blocks[0].text.text).toEqual(
+    "Best meet of *Roy Lotzwik* <https://www.openpowerlifting.org/u/roylotzwik|openpowerlifting.org>"
+  );
   expect(result.blocks[2].fields[0].text).toEqual(
     "*Meet:* BW Meisterschaften 2019"
   );

@@ -7,6 +7,20 @@ const errors = require("./errors");
 //----------------------------------------------------------------
 // Private functions
 //----------------------------------------------------------------
+function getPersonLink(name) {
+  let linkName = name
+    //replace accents/diacritics with their "normal" letter
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    //remove spaces
+    .replace(/\s+/g, "")
+    //remove # for numbers
+    .replace(/#+/g, "")
+    .toLowerCase();
+
+  return `https://www.openpowerlifting.org/u/${linkName}`;
+}
+
 function getSingleMeetResultView({ personObj, channel }) {
   let resultMessage = JSON.parse(
     JSON.stringify(slack_views.singlemeetResultMessageView)
@@ -52,7 +66,9 @@ async function getLastmeetResult({ channel, person }) {
   let view = getSingleMeetResultView({ personObj: rows[0], channel: channel });
 
   view.text = `Last meet of *${rows[0].name}*`; //message preview
-  view.blocks[0].text.text = `Last meet of *${rows[0].name}* <https://www.openpowerlifting.org/u/roylotzwik|openpowerlifting.org>`;
+  view.blocks[0].text.text = `Last meet of *${rows[0].name}* <${getPersonLink(
+    rows[0].name
+  )}|openpowerlifting.org>`;
 
   return view;
 }
@@ -72,7 +88,9 @@ async function getBestmeetResult({ channel, person, criteria }) {
   let view = getSingleMeetResultView({ personObj: rows[0], channel });
 
   view.text = `Best meet of *${rows[0].name}*`; //message preview
-  view.blocks[0].text.text = `Best meet of *${rows[0].name}* <https://www.openpowerlifting.org/u/roylotzwik|openpowerlifting.org>`;
+  view.blocks[0].text.text = `Best meet of *${rows[0].name}* <${getPersonLink(
+    rows[0].name
+  )}|openpowerlifting.org>`;
 
   return view;
 }
@@ -173,9 +191,7 @@ function getHelpView({ team_id, api_app_id }) {
     type: "section",
     text: {
       type: "mrkdwn",
-      text: `Find more info here:\n<slack://app?team=${team_id}&id=${
-        api_app_id
-      }&tab=home|App Home> (only works in Slack App)`,
+      text: `Find more info here:\n<slack://app?team=${team_id}&id=${api_app_id}&tab=home|App Home> (only works in Slack App)`,
     },
   });
 
