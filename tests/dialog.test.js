@@ -8,7 +8,7 @@ const channel = "ABCDEFGH";
 // Dialog View
 //----------------------------------------------------------------
 test("get Dialog - base", () => {
-  expect(slack_funcs.getEntryDialog()).toEqual(slack_views.entryDialogView);
+  expect(slack_funcs.getEntryDialog({})).toEqual(slack_views.entryDialogView);
 });
 
 //----------------------------------------------------------------
@@ -19,6 +19,7 @@ test("get Details from Dialog - lastmeet", () => {
     command: slack_cons.commandLastmeet,
     channel,
     text: "Roy Lotzwik",
+    thread_ts: undefined,
   };
 
   expect(
@@ -56,6 +57,7 @@ test("get Details from Dialog - bestmeet", () => {
     command: slack_cons.commandBestmeet,
     channel,
     text: "Roy Lotzwik;dots",
+    thread_ts: undefined,
   };
 
   expect(

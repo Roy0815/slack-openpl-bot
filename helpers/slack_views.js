@@ -212,6 +212,7 @@ const entryDialogView = {
             type: "plain_text",
             text: "Select conversation",
           },
+          default_to_current_conversation: true,
         },
       },
     ],

@@ -21,7 +21,7 @@ const pool = new Pool({
 const testDataSingle = [
   {
     name: "Roy Lotzwik",
-    date: "22.09.2019",
+    date: new Date(),
     meetname: "BW Meisterschaften 2019",
     division: "Juniors",
     weightclasskg: "93 kg",
@@ -38,7 +38,7 @@ const testDataMultiple = [
   testDataSingle[0],
   {
     name: "Simon Daniel Oswald",
-    date: "21.08.2022",
+    date: new Date(),
     meetname: "DM Kraftdreikampf Equipped/Classic - Aktive",
     division: "Open",
     weightclasskg: "105 kg",

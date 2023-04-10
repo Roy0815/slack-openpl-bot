@@ -24,7 +24,7 @@ app.command(
       return;
     }
 
-    const view = slack_funcs.getEntryDialog();
+    const view = slack_funcs.getEntryDialog({});
     view.trigger_id = command.trigger_id;
 
     await client.views.open(view);
@@ -93,7 +93,10 @@ app.command("/helloworld", async ({ command, ack, client, respond }) => {
 //******************** Actions ********************//
 app.action("entrymessage_start", async ({ body, client, ack }) => {
   await ack();
-  const view = slack_funcs.getEntryDialog();
+  const view = slack_funcs.getEntryDialog({
+    thread_ts: body.container.thread_ts,
+    channel: body.channel.id,
+  });
   view.trigger_id = body.trigger_id;
 
   await client.views.open(view);
@@ -110,10 +113,16 @@ app.action(
   slack_cons.actionEntryDialogRadioButtons,
   async ({ ack, body, client }) => {
     await ack();
+    let thread = {};
 
-    const view = slack_funcs.getEntryDialog(
-      body.actions[0].selected_option.value
-    );
+    if (body.view.private_metadata && body.view.private_metadata !== "")
+      thread = JSON.parse(body.view.private_metadata);
+
+    const view = slack_funcs.getEntryDialog({
+      subviewName: body.actions[0].selected_option.value,
+      channel: thread.channel,
+      thread_ts: thread.thread_ts,
+    });
 
     view.view_id = body.view.id;
     await client.views.update(view);
@@ -121,7 +130,7 @@ app.action(
 );
 
 // handle remaining actions
-app.action(new RegExp(`.*`), async ({ body, ack }) => {
+app.action(new RegExp(`.*`), async ({ ack }) => {
   try {
     await ack();
   } catch (error) {} //ReceiverMultipleAckError
@@ -130,6 +139,10 @@ app.action(new RegExp(`.*`), async ({ body, ack }) => {
 //******************** View Submissions ********************//
 app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
   let infoObj;
+  let thread = {};
+
+  if (body.view.private_metadata && body.view.private_metadata !== "")
+    thread = JSON.parse(body.view.private_metadata);
 
   try {
     infoObj = slack_funcs.getDetailsFromDialog(body);
@@ -154,6 +167,7 @@ app.view(slack_cons.viewNameEntryDialog, async ({ body, ack, client }) => {
       channel: channel,
       user: body.user.id,
       text: slack_cons.messagePendingResult,
+      thread_ts: thread.channel === channel ? thread.thread_ts : undefined,
     });
 
     //result message

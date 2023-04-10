@@ -27,7 +27,7 @@ function formatDate(date) {
   }${date.getMonth() + 1}.${date.getFullYear()}`;
 }
 
-function getSingleMeetResultView({ personObj, channel }) {
+function getSingleMeetResultView({ personObj }) {
   let resultMessage = JSON.parse(
     JSON.stringify(slack_views.singlemeetResultMessageView)
   );
@@ -55,11 +55,10 @@ function getSingleMeetResultView({ personObj, channel }) {
   resultMessage.blocks[4].fields[2].text = `*Deadlift:* ${personObj.best3deadliftkg}`;
   resultMessage.blocks[4].fields[3].text = `*Total:* ${personObj.totalkg}`;
 
-  resultMessage.channel = channel;
   return resultMessage;
 }
 
-async function getLastmeetResult({ channel, person }) {
+async function getLastmeetResult({ person }) {
   //check user exists and is unique
   let users = await db_funcs.selectLifter(person);
 
@@ -71,7 +70,7 @@ async function getLastmeetResult({ channel, person }) {
   let { rows } = await db_funcs.selectLastMeet(person);
 
   //build view
-  let view = getSingleMeetResultView({ personObj: rows[0], channel: channel });
+  let view = getSingleMeetResultView({ personObj: rows[0] });
 
   view.text = `Last meet of *${rows[0].name}*`; //message preview
   view.blocks[0].text.text = `Last meet of *${rows[0].name}* <${getPersonLink(
@@ -81,7 +80,7 @@ async function getLastmeetResult({ channel, person }) {
   return view;
 }
 
-async function getBestmeetResult({ channel, person, criteria }) {
+async function getBestmeetResult({ person, criteria }) {
   //check user exists and is unique
   let users = await db_funcs.selectLifter(person);
 
@@ -93,7 +92,7 @@ async function getBestmeetResult({ channel, person, criteria }) {
   let { rows } = await db_funcs.selectBestMeet({ person, criteria });
 
   //build view
-  let view = getSingleMeetResultView({ personObj: rows[0], channel });
+  let view = getSingleMeetResultView({ personObj: rows[0] });
 
   view.text = `Best meet of *${rows[0].name}*`; //message preview
   view.blocks[0].text.text = `Best meet of *${rows[0].name}* <${getPersonLink(
@@ -169,9 +168,8 @@ function getCommandTextFromDialog({ command, values }) {
   return text;
 }
 
-function getInfoObjectFromText({ command, channel, text }) {
+function getInfoObjectFromText({ command, text }) {
   let infoObject = {};
-  infoObject.channel = channel;
 
   switch (command) {
     case slack_cons.commandLastmeet:
@@ -209,6 +207,7 @@ function getHelpView({ team_id, api_app_id }) {
 function getDetailsFromDialog({
   view: {
     state: { values },
+    private_metadata,
   },
 }) {
   let command =
@@ -221,29 +220,33 @@ function getDetailsFromDialog({
       slack_cons.actionEntryDialogConversationSelect
     ].selected_conversation;
 
+  let thread = {};
+  if (private_metadata && private_metadata !== "")
+    thread = JSON.parse(private_metadata);
+
   return {
     command,
     channel,
     text: getCommandTextFromDialog({ command, values }),
+    thread_ts: thread.channel === channel ? thread.thread_ts : undefined,
   };
 }
 
-async function getResultMessage({ command, text, channel }) {
+async function getResultMessage({ command, text, channel, thread_ts }) {
   let view;
 
   switch (command) {
     case slack_cons.commandLastmeet:
-      view = await getLastmeetResult(
-        getInfoObjectFromText({ command, text, channel })
-      );
+      view = await getLastmeetResult(getInfoObjectFromText({ command, text }));
       break;
 
     case slack_cons.commandBestmeet:
-      view = await getBestmeetResult(
-        getInfoObjectFromText({ command, text, channel })
-      );
+      view = await getBestmeetResult(getInfoObjectFromText({ command, text }));
       break;
   }
+
+  view.channel = channel;
+  if (thread_ts) view.thread_ts = thread_ts;
 
   return view;
 }
@@ -259,8 +262,31 @@ function getEntryMessage({ channel, user, thread_ts }) {
   return view;
 }
 
-function getEntryDialog(subviewName) {
+function getEntryDialog({ subviewName, thread_ts, channel }) {
   let baseView = JSON.parse(JSON.stringify(slack_views.entryDialogView));
+
+  if (thread_ts && channel) {
+    //save thread ts and channel
+    baseView.view.private_metadata = JSON.stringify({ thread_ts, channel });
+
+    //preselect channel
+    baseView.view.blocks[1].element.initial_conversation = channel;
+
+    //add context hint
+    baseView.view.blocks.push(
+      { type: "divider" },
+      {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: `:exclamation: You started this message from a thread in channel <#${channel}>. If you change the channel the result will not be posted in the thread`,
+          },
+        ],
+      }
+    );
+  }
+
   let subView;
 
   switch (subviewName) {
