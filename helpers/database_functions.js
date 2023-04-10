@@ -205,13 +205,15 @@ function getTestData(person) {
 function selectLastMeet(person) {
   if (process.env.NODE_ENV == "test") return { rows: getTestData(person) };
 
-  let query =
+  let text =
     "SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, bodyweightkg, place, dots, best3squatkg, best3benchkg, best3deadliftkg, totalkg " +
     "FROM public.lifterdata_csv " +
-    `WHERE name LIKE '${buildNamePattern(person)}' ` +
+    `WHERE name LIKE $1 ` +
     "ORDER BY name ASC, date DESC;";
 
-  return pool.query(query);
+  let values = [buildNamePattern(person)];
+
+  return pool.query(text, values);
 }
 
 function selectBestMeet({ person, criteria }) {
@@ -231,25 +233,29 @@ function selectBestMeet({ person, criteria }) {
       break;
   }
 
-  let query =
+  let text =
     "SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, bodyweightkg, place, dots, best3squatkg, best3benchkg, best3deadliftkg, totalkg " +
     "FROM public.lifterdata_csv " +
-    `WHERE name LIKE '${buildNamePattern(person)}' ` +
+    `WHERE name LIKE $1 ` +
     `ORDER BY name ASC${sort};`;
 
-  return pool.query(query);
+  let values = [buildNamePattern(person)];
+
+  return pool.query(text, values);
 }
 
 async function selectLifter(name) {
   if (process.env.NODE_ENV == "test") return getTestData(name);
 
-  let query =
+  let text =
     "SELECT DISTINCT ON (name) name, date, meetname, division, weightclasskg, totalkg " +
     "FROM public.lifterdata_csv " +
-    `WHERE name LIKE '${buildNamePattern(name)}' ` +
+    `WHERE name LIKE $1 ` +
     "ORDER BY name ASC, date DESC;";
 
-  let result = await pool.query(query);
+  let values = [buildNamePattern(name)];
+
+  let result = await pool.query(text, values);
   return result.rows;
 }
 
