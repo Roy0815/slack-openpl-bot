@@ -21,13 +21,21 @@ function getPersonLink(name) {
   return `https://www.openpowerlifting.org/u/${linkName}`;
 }
 
+function formatDate(date) {
+  return `${date.getDate() < 10 ? "0" : ""}${date.getDate()}.${
+    date.getMonth() + 1 < 10 ? "0" : ""
+  }${date.getMonth() + 1}.${date.getFullYear()}`;
+}
+
 function getSingleMeetResultView({ personObj, channel }) {
   let resultMessage = JSON.parse(
     JSON.stringify(slack_views.singlemeetResultMessageView)
   );
 
   resultMessage.blocks[2].fields[0].text = `*Meet:* ${personObj.meetname}`;
-  resultMessage.blocks[2].fields[1].text = `*Date:* ${personObj.date}`;
+  resultMessage.blocks[2].fields[1].text = `*Date:* ${formatDate(
+    personObj.date
+  )}`;
 
   resultMessage.blocks[3].fields[0].text = `*Categorie:* ${personObj.division}`;
   resultMessage.blocks[3].fields[1].text = `*Class:* ${personObj.weightclasskg}`;
