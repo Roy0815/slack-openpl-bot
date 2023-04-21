@@ -143,13 +143,23 @@ function updateDatabase({ user, client }) {
     });
 
   let query =
+    //create temp table
     "CREATE TEMP TABLE lifterdata_csv_temp ON COMMIT DROP " +
     "AS SELECT * FROM public.lifterdata_csv WITH NO DATA;" +
+    // modify total column to character
+    "ALTER TABLE lifterdata_csv_temp ALTER COLUMN totalkg TYPE character(8);" +
+    //read csv
     "COPY lifterdata_csv_temp (name, sex, event, equipment, age, ageclass, birthyearclass, division, bodyweightkg, weightclasskg, squat1kg, squat2kg, squat3kg, squat4kg, best3squatkg, bench1kg, bench2kg, bench3kg, bench4kg, best3benchkg, deadlift1kg, deadlift2kg, deadlift3kg, deadlift4kg, best3deadliftkg, totalkg, place, dots, wilks, glossbrenner, goodlift, tested, country, state, federation, parentfederation, date, meetcountry, meetstate, meettown, meetname) " +
     `FROM '${csvPath}'` +
-    "DELIMITER ',' CSV HEADER QUOTE '\"' " +
-    "ESCAPE '''' FORCE NOT NULL bodyweightkg, totalkg, division;" +
+    "WITH DELIMITER ',' CSV HEADER QUOTE '\"' " +
+    "ESCAPE '''' FORCE NOT NULL bodyweightkg, totalkg, division, equipment;" +
+    //fix empty totals
+    "UPDATE lifterdata_csv_temp SET totalkg = 0 WHERE totalkg = ' '; " +
+    //restore column type
+    "ALTER TABLE lifterdata_csv_temp ALTER COLUMN totalkg TYPE numeric(5,1) USING totalkg::numeric(5,1); " +
+    //delete live table
     "TRUNCATE public.lifterdata_csv;" +
+    //insert new entries
     "INSERT INTO public.lifterdata_csv " +
     "SELECT * FROM lifterdata_csv_temp ON CONFLICT DO NOTHING;";
 
@@ -160,15 +170,17 @@ function updateDatabase({ user, client }) {
       if (user && client)
         client.chat.postMessage({
           channel: user,
-          text: "Error in Database query",
+          text: `Error in Database query\n${err.stack}`,
         });
     } else {
       console.log("Database updated!");
-      console.log(res?.[4]); //only log the insert
       if (user && client)
-        client.chat.postMessage({
-          channel: user,
-          text: "Database updated!",
+        client.files.uploadV2({
+          channel_id: user,
+          initial_comment: `Database updated!`,
+          filename: `result.json`,
+          filetype: `javascript`,
+          content: JSON.stringify(res[6]),
         });
     }
     fs.unlink(csvPath, (err) => {
