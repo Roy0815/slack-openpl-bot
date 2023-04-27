@@ -1,6 +1,20 @@
-const slack_funcs = require("../helpers/slack_functions");
-const slack_views = require("../helpers/slack_views");
-const slack_cons = require("../helpers/slack_constants");
+import {
+  getEntryDialog,
+  getDetailsFromDialog,
+} from "../helpers/slack_functions";
+import { entryDialogView } from "../helpers/slack_views";
+import {
+  commandLastmeet,
+  blockPerson1InputSubView,
+  actionPerson1InputSubView,
+  blockEntryDialogRadioButtons,
+  actionEntryDialogRadioButtons,
+  blockEntryDialogConversationSelect,
+  actionEntryDialogConversationSelect,
+  commandBestmeet,
+  blockCriteriaInputSubView,
+  actionCriteriaInputSubView,
+} from "../helpers/slack_constants";
 
 const channel = "ABCDEFGH";
 
@@ -8,7 +22,7 @@ const channel = "ABCDEFGH";
 // Dialog View
 //----------------------------------------------------------------
 test("get Dialog - base", () => {
-  expect(slack_funcs.getEntryDialog({})).toEqual(slack_views.entryDialogView);
+  expect(getEntryDialog({})).toEqual(entryDialogView);
 });
 
 //----------------------------------------------------------------
@@ -16,29 +30,29 @@ test("get Dialog - base", () => {
 //----------------------------------------------------------------
 test("get Details from Dialog - lastmeet", () => {
   let expectedObject = {
-    command: slack_cons.commandLastmeet,
+    command: commandLastmeet,
     channel,
     text: "Roy Lotzwik",
     thread_ts: undefined,
   };
 
   expect(
-    slack_funcs.getDetailsFromDialog({
+    getDetailsFromDialog({
       view: {
         state: {
           values: {
-            [slack_cons.blockPerson1InputSubView]: {
-              [slack_cons.actionPerson1InputSubView]: {
+            [blockPerson1InputSubView]: {
+              [actionPerson1InputSubView]: {
                 value: expectedObject.text,
               },
             },
-            [slack_cons.blockEntryDialogRadioButtons]: {
-              [slack_cons.actionEntryDialogRadioButtons]: {
+            [blockEntryDialogRadioButtons]: {
+              [actionEntryDialogRadioButtons]: {
                 selected_option: { value: expectedObject.command },
               },
             },
-            [slack_cons.blockEntryDialogConversationSelect]: {
-              [slack_cons.actionEntryDialogConversationSelect]: {
+            [blockEntryDialogConversationSelect]: {
+              [actionEntryDialogConversationSelect]: {
                 selected_conversation: channel,
               },
             },
@@ -54,34 +68,34 @@ test("get Details from Dialog - lastmeet", () => {
 //----------------------------------------------------------------
 test("get Details from Dialog - bestmeet", () => {
   let expectedObject = {
-    command: slack_cons.commandBestmeet,
+    command: commandBestmeet,
     channel,
     text: "Roy Lotzwik;dots",
     thread_ts: undefined,
   };
 
   expect(
-    slack_funcs.getDetailsFromDialog({
+    getDetailsFromDialog({
       view: {
         state: {
           values: {
-            [slack_cons.blockPerson1InputSubView]: {
-              [slack_cons.actionPerson1InputSubView]: {
+            [blockPerson1InputSubView]: {
+              [actionPerson1InputSubView]: {
                 value: "Roy Lotzwik",
               },
             },
-            [slack_cons.blockCriteriaInputSubView]: {
-              [slack_cons.actionCriteriaInputSubView]: {
+            [blockCriteriaInputSubView]: {
+              [actionCriteriaInputSubView]: {
                 selected_option: { value: "dots" },
               },
             },
-            [slack_cons.blockEntryDialogRadioButtons]: {
-              [slack_cons.actionEntryDialogRadioButtons]: {
+            [blockEntryDialogRadioButtons]: {
+              [actionEntryDialogRadioButtons]: {
                 selected_option: { value: expectedObject.command },
               },
             },
-            [slack_cons.blockEntryDialogConversationSelect]: {
-              [slack_cons.actionEntryDialogConversationSelect]: {
+            [blockEntryDialogConversationSelect]: {
+              [actionEntryDialogConversationSelect]: {
                 selected_conversation: channel,
               },
             },

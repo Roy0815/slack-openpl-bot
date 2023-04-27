@@ -1,13 +1,16 @@
+import { AppMentionEvent } from "@slack/bolt";
+
 // file with everything for slack interactions
-const slack_views = require("./slack_views");
-const slack_cons = require("./slack_constants");
-const db_funcs = require("./database_functions");
-const errors = require("./errors");
+import * as slack_views from "./slack_views.js";
+import * as slack_cons from "./slack_constants.js";
+import * as db_funcs from "./database_functions.js";
+import * as errors from "./errors.js";
+import { CommandInfo } from "./types.js";
 
 //----------------------------------------------------------------
 // Private functions
 //----------------------------------------------------------------
-function getPersonLink(name) {
+function getPersonLink(name: string): string {
   let linkName = name
     //replace accents/diacritics with their "normal" letter
     .normalize("NFD")
@@ -21,7 +24,7 @@ function getPersonLink(name) {
   return `https://www.openpowerlifting.org/u/${linkName}`;
 }
 
-function formatDate(date) {
+function formatDate(date: Date): string {
   return `${date.getDate() < 10 ? "0" : ""}${date.getDate()}.${
     date.getMonth() + 1 < 10 ? "0" : ""
   }${date.getMonth() + 1}.${date.getFullYear()}`;
@@ -168,18 +171,18 @@ function getCommandTextFromDialog({ command, values }) {
   return text;
 }
 
-function getInfoObjectFromText({ command, text }) {
-  let infoObject = {};
+function getInfoObjectFromText({ command, text }): CommandInfo {
+  let infoObject = {} as CommandInfo;
 
   switch (command) {
     case slack_cons.commandLastmeet:
-      infoObject.person = text.trim();
+      infoObject.name = text.trim();
       break;
 
     case slack_cons.commandBestmeet:
-      [infoObject.person, infoObject.criteria] = text
+      [infoObject.name, infoObject.criteria] = text
         .split(";")
-        .map(function (item) {
+        .map(function (item: string) {
           return item.trim();
         });
       break;
@@ -191,7 +194,7 @@ function getInfoObjectFromText({ command, text }) {
 //----------------------------------------------------------------
 // Public functions
 //----------------------------------------------------------------
-function getHelpView({ team_id, api_app_id }) {
+export function getHelpView({ team_id, api_app_id }) {
   let helpView = JSON.parse(JSON.stringify(slack_views.helpView));
   helpView.blocks.push({
     type: "section",
@@ -204,7 +207,7 @@ function getHelpView({ team_id, api_app_id }) {
   return helpView;
 }
 
-function getDetailsFromDialog({
+export function getDetailsFromDialog({
   view: {
     state: { values },
     private_metadata,
@@ -232,7 +235,7 @@ function getDetailsFromDialog({
   };
 }
 
-async function getResultMessage({ command, text, channel, thread_ts }) {
+export async function getResultMessage({ command, text, channel, thread_ts }) {
   let view;
 
   switch (command) {
@@ -251,18 +254,18 @@ async function getResultMessage({ command, text, channel, thread_ts }) {
   return view;
 }
 
-function getEntryMessage({ channel, user, thread_ts }) {
+export function getEntryMessage(event: AppMentionEvent) {
   let view = JSON.parse(JSON.stringify(slack_views.entryMessageView));
 
-  view.channel = channel;
-  view.user = user;
+  view.channel = event.channel;
+  view.user = event.user;
 
-  if (thread_ts) view.thread_ts = thread_ts;
+  if (event.thread_ts) view.thread_ts = event.thread_ts;
 
   return view;
 }
 
-function getEntryDialog({ subviewName, thread_ts, channel }) {
+export function getEntryDialog({ subviewName, thread_ts, channel }) {
   let baseView = JSON.parse(JSON.stringify(slack_views.entryDialogView));
 
   if (thread_ts && channel) {
@@ -313,8 +316,7 @@ function getEntryDialog({ subviewName, thread_ts, channel }) {
   return baseView;
 }
 
-function validateTextForCommand({ command, text }) {
-  const texts = {};
+export function validateTextForCommand({ command, text }) {
 
   switch (command) {
     case slack_cons.commandLastmeet:
@@ -323,21 +325,21 @@ function validateTextForCommand({ command, text }) {
         !slack_cons.regexLifterNameValidation.test(text) ||
         text === ""
       )
-        throw new errors.CommandSubmissionError({
-          block: slack_cons.blockPerson1InputSubView,
-          message: slack_cons.messageLifterNameNotValid,
-        });
+        throw new errors.CommandSubmissionError(
+          slack_cons.blockPerson1InputSubView,
+          slack_cons.messageLifterNameNotValid
+        );
       break;
 
     case slack_cons.commandBestmeet:
       if (!text || text === "")
-        throw new errors.CommandSubmissionError({
-          block: slack_cons.blockPerson1InputSubView,
-          message: slack_cons.messageLifterNameNotValid,
-        });
+        throw new errors.CommandSubmissionError(
+          slack_cons.blockPerson1InputSubView,
+          slack_cons.messageLifterNameNotValid
+        );
 
       //split variables and remove spaces
-      [texts.lifterName, texts.criteria] = text.split(";").map(function (item) {
+      [texts.lifterName: string, texts.criteria] = text.split(";").map(function (item) {
         return item.trim();
       });
 
@@ -412,19 +414,3 @@ function validateTextForCommand({ command, text }) {
       break;
   }
 }
-
-function handleError(error) {
-  console.error(error);
-  throw e;
-}
-
-//exports
-module.exports = {
-  getHelpView,
-  getDetailsFromDialog,
-  getResultMessage,
-  getEntryDialog,
-  getEntryMessage,
-  validateTextForCommand,
-  handleError,
-};

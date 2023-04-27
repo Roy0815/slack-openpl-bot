@@ -1,6 +1,6 @@
-const slack_funcs = require("../helpers/slack_functions");
-const slack_cons = require("../helpers/slack_constants");
-const errors = require("../helpers/errors");
+import { getResultMessage } from "../helpers/slack_functions";
+import { commandLastmeet, commandBestmeet } from "../helpers/slack_constants";
+import { AmbiguousLifterError, NoLifterFoundError } from "../helpers/errors";
 
 const channel = "ABCDEFGH";
 
@@ -8,7 +8,7 @@ const channel = "ABCDEFGH";
 // lastmeet
 //----------------------------------------------------------------
 test("Validate get Result Message - lastmeet", async () => {
-  let command = slack_cons.commandLastmeet;
+  let command = commandLastmeet;
 
   let input = {
     command,
@@ -17,23 +17,17 @@ test("Validate get Result Message - lastmeet", async () => {
   };
 
   //negatives
-  await expect(slack_funcs.getResultMessage(input)).rejects.toThrow(
-    errors.AmbiguousLifterError
-  );
+  await expect(getResultMessage(input)).rejects.toThrow(AmbiguousLifterError);
 
   input.text = "Roy";
-  await expect(slack_funcs.getResultMessage(input)).rejects.toThrow(
-    errors.AmbiguousLifterError
-  );
+  await expect(getResultMessage(input)).rejects.toThrow(AmbiguousLifterError);
 
   input.text = "";
-  await expect(slack_funcs.getResultMessage(input)).rejects.toThrow(
-    errors.NoLifterFoundError
-  );
+  await expect(getResultMessage(input)).rejects.toThrow(NoLifterFoundError);
 
   //positives
   input.text = "Roy Lotzwik #1";
-  let result = await slack_funcs.getResultMessage(input);
+  let result = await getResultMessage(input);
 
   expect(result.channel).toEqual(channel);
   expect(result.text).toMatch(/Last meet/);
@@ -51,7 +45,7 @@ test("Validate get Result Message - lastmeet", async () => {
 // bestmeet
 //----------------------------------------------------------------
 test("Validate get Result Message - bestmeet", async () => {
-  let command = slack_cons.commandBestmeet;
+  let command = commandBestmeet;
 
   let input = {
     command,
@@ -60,23 +54,17 @@ test("Validate get Result Message - bestmeet", async () => {
   };
 
   //negatives
-  await expect(slack_funcs.getResultMessage(input)).rejects.toThrow(
-    errors.AmbiguousLifterError
-  );
+  await expect(getResultMessage(input)).rejects.toThrow(AmbiguousLifterError);
 
   input.text = "Roy";
-  await expect(slack_funcs.getResultMessage(input)).rejects.toThrow(
-    errors.AmbiguousLifterError
-  );
+  await expect(getResultMessage(input)).rejects.toThrow(AmbiguousLifterError);
 
   input.text = "";
-  await expect(slack_funcs.getResultMessage(input)).rejects.toThrow(
-    errors.NoLifterFoundError
-  );
+  await expect(getResultMessage(input)).rejects.toThrow(NoLifterFoundError);
 
   //positives
   input.text = "Roy Lotzwik #1  ; dots";
-  let result = await slack_funcs.getResultMessage(input);
+  let result = await getResultMessage(input);
 
   expect(result.channel).toEqual(channel);
   expect(result.text).toMatch(/Best meet/);

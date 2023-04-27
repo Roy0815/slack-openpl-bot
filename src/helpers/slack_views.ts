@@ -1,11 +1,12 @@
 //file with all frontend data for slack
-const slack_cons = require("./slack_constants");
+import * as slack_cons from "./slack_constants.js";
+import * as openpl_types from "./types.js";
 
 //----------------------------------------------------------------
 // Home view
 //----------------------------------------------------------------
 //help subview used for homeview and help message
-const helpSubView = [
+export const helpSubView = [
   {
     type: "section",
     text: {
@@ -36,7 +37,7 @@ const helpSubView = [
   },
 ];
 
-const homeView = {
+export const homeView = {
   user_id: "", // Use the user ID associated with the event
   view: {
     type: "home",
@@ -78,14 +79,14 @@ const homeView = {
   },
 };
 
-const helpView = {
+export const helpView = {
   blocks: [helpSubView[0], helpSubView[1], helpSubView[2], helpSubView[3]],
 };
 
 //----------------------------------------------------------------
 // Messages
 //----------------------------------------------------------------
-const entryMessageView = {
+export const entryMessageView = {
   channel: "",
   text: "You mentioned me in your message, do you want to start a lookup?", //this is required as a preview
   user: "",
@@ -128,7 +129,7 @@ const entryMessageView = {
 //----------------------------------------------------------------
 // Dialog + Sub views
 //----------------------------------------------------------------
-const entryDialogView = {
+export const entryDialogView = {
   trigger_id: "",
   view: {
     type: "modal",
@@ -373,14 +374,14 @@ const meetNameSelectBlock = {
   },
 };
 
-const lastmeetSubView = [
+export const lastmeetSubView = [
   {
     type: "divider",
   },
   person1SelectBlock,
 ];
 
-const bestmeetSubView = [
+export const bestmeetSubView = [
   {
     type: "divider",
   },
@@ -388,7 +389,7 @@ const bestmeetSubView = [
   criteriaSelectBlock,
 ];
 
-const compareSubView = [
+export const compareSubView = [
   {
     type: "divider",
   },
@@ -398,9 +399,9 @@ const compareSubView = [
   liftSelectBlock,
 ];
 
-const meetLinkSubView = [{ type: "divider" }, meetNameSelectBlock];
+export const meetLinkSubView = [{ type: "divider" }, meetNameSelectBlock];
 
-const rankingSubView = [
+export const rankingSubView = [
   {
     type: "divider",
   },
@@ -530,7 +531,7 @@ const rankingSubView = [
 //----------------------------------------------------------------
 // Results
 //----------------------------------------------------------------
-const singlemeetResultMessageView = {
+export const singlemeetResultMessageView = {
   channel: "",
   text: "", // Text in the notification, set in the method
   emoji: true,
@@ -607,7 +608,7 @@ const singlemeetResultMessageView = {
   ],
 };
 
-const compareResultMessageView = {
+export const compareResultMessageView = {
   channel: "",
   text: "Comparison of Roy Lotzwik and Simon Oswald", // Text in the notification
   emoji: true,
@@ -721,23 +722,4 @@ const compareResultMessageView = {
       },
     },
   ],
-};
-
-//export views
-module.exports = {
-  homeView,
-  helpSubView,
-  helpView,
-
-  entryMessageView,
-
-  entryDialogView,
-  lastmeetSubView,
-  bestmeetSubView,
-  compareSubView,
-  meetLinkSubView,
-  rankingSubView,
-
-  singlemeetResultMessageView,
-  compareResultMessageView,
 };
